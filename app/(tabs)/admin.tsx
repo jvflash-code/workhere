@@ -1,5 +1,6 @@
+import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
-import { ActivityIndicator, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import LangToggle from '../../components/LangToggle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAllVideos, useCompany, VideoItem } from '../../hooks/useCompany';
@@ -55,6 +56,22 @@ export default function AdminScreen() {
   const videosUsed = videos.filter((v: VideoItem) => v.status === 'live').length;
   const atLimit = videosUsed >= videoLimit;
 
+  async function handleUpload() {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Please allow access to your photo library to upload videos.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      allowsEditing: false,
+      quality: 1,
+    });
+    if (!result.canceled) {
+      Alert.alert('Video selected', 'Upload functionality coming soon — your video will be submitted for review.');
+    }
+  }
+
   function confirmUpgrade() {
     setCurrentPlan(selectedPlan);
     setShowUpgrade(false);
@@ -105,7 +122,7 @@ export default function AdminScreen() {
               </TouchableOpacity>
             </View>
           ) : (
-            <TouchableOpacity style={styles.uploadZone}>
+            <TouchableOpacity style={styles.uploadZone} onPress={handleUpload}>
               <View style={styles.recordBtn}>
                 <View style={styles.recordDot} />
               </View>

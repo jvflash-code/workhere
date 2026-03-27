@@ -76,8 +76,10 @@ export function useAllVideos(companyId: string) {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
+    setLoading(true);
     supabase
       .from('videos')
       .select(`*, employees(*)`)
@@ -87,7 +89,9 @@ export function useAllVideos(companyId: string) {
         else setVideos(data ?? []);
         setLoading(false);
       });
-  }, [companyId]);
+  }, [companyId, tick]);
 
-  return { videos, loading, error };
+  function refetch() { setTick((t) => t + 1); }
+
+  return { videos, loading, error, refetch };
 }

@@ -1,9 +1,10 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import LangToggle from '../../components/LangToggle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAllVideos, useCompany, VideoItem } from '../../hooks/useCompany';
+import { supabase } from '../../lib/supabase';
 
 const COMPANY_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -12,11 +13,23 @@ type Plan = 'starter' | 'growth' | 'pro';
 export default function AdminScreen() {
   const { t } = useLanguage();
   const { company } = useCompany(COMPANY_ID);
-  const { videos, loading: videosLoading } = useAllVideos(COMPANY_ID);
+  const { videos, loading: videosLoading, refetch } = useAllVideos(COMPANY_ID);
   const [currentPlan, setCurrentPlan] = useState<Plan>('growth');
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [annual, setAnnual] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan>('growth');
+
+  // Upload flow state
+  const [showUploadForm, setShowUploadForm] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState('');
+  const [pendingVideoUri, setPendingVideoUri] = useState<string | null>(null);
+  const [empName, setEmpName] = useState('');
+  const [empRole, setEmpRole] = useState('');
+  const [empYears, setEmpYears] = useState('');
+  const [videoQuote, setVideoQuote] = useState('');
+
+  const AVATAR_COLORS = ['#1A5CFF', '#6C3DE8', '#1D9E75', '#E8472A', '#F59E0B', '#0EA5E9'];
 
   const plans = [
     {
@@ -68,7 +81,76 @@ export default function AdminScreen() {
       quality: 1,
     });
     if (!result.canceled) {
-      Alert.alert('Video selected', 'Upload functionality coming soon — your video will be submitted for review.');
+      setPendingVideoUri(result.assets[0].uri);
+      setShowUploadForm(true);
+    }
+  }
+
+  function resetUploadForm() {
+    setShowUploadForm(false);
+    setPendingVideoUri(null);
+    setEmpName('');
+    setEmpRole('');
+    setEmpYears('');
+    setVideoQuote('');
+    setUploadProgress('');
+    setUploading(false);
+  }
+
+  async function submitUpload() {
+    if (!pendingVideoUri || !empName.trim() || !empRole.trim()) {
+      Alert.alert('Missing info', 'Please fill in employee name and role.');
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      // 1. Create employee record
+      setUploadProgress('Creating employee profile...');
+      const initials = empName.trim().split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
+      const color = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
+
+      const { data: emp, error: empError } = await supabase
+        .from('employees')
+        .insert({ company_id: COMPANY_ID, name: empName.trim(), role: empRole.trim(), initials, color, years_at_company: empYears.trim() || '1 year' })
+        .select()
+        .single();
+
+      if (empError) throw empError;
+
+      // 2. Upload video to Storage
+      setUploadProgress('Uploading video...');
+      const ext = pendingVideoUri.split('.').pop() ?? 'mp4';
+      const fileName = `${COMPANY_ID}/${emp.id}-${Date.now()}.${ext}`;
+
+      const response = await fetch(pendingVideoUri);
+      const blob = await response.blob();
+
+      const { error: storageError } = await supabase.storage
+        .from('videos')
+        .upload(fileName, blob, { contentType: `video/${ext}` });
+
+      if (storageError) throw storageError;
+
+      // 3. Get public URL
+      const { data: { publicUrl } } = supabase.storage.from('videos').getPublicUrl(fileName);
+
+      // 4. Insert video record
+      setUploadProgress('Saving video record...');
+      const { error: videoError } = await supabase
+        .from('videos')
+        .insert({ company_id: COMPANY_ID, employee_id: emp.id, video_url: publicUrl, duration: '0:00', quote: videoQuote.trim() || '', status: 'pending', views: 0 });
+
+      if (videoError) throw videoError;
+
+      resetUploadForm();
+      refetch();
+      Alert.alert('Uploaded!', 'Video submitted for review. It will go live once approved.');
+    } catch (err: any) {
+      setUploading(false);
+      setUploadProgress('');
+      Alert.alert('Upload failed', err.message ?? 'Something went wrong.');
     }
   }
 
@@ -181,6 +263,38 @@ export default function AdminScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* Upload form modal */}
+      <Modal visible={showUploadForm} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>New Employee Video</Text>
+            <Text style={styles.modalSub}>Fill in the details for this testimonial.</Text>
+
+            <TextInput style={styles.formInput} placeholder="Employee full name *" placeholderTextColor="#aaa" value={empName} onChangeText={setEmpName} editable={!uploading} />
+            <TextInput style={styles.formInput} placeholder="Job title / role *" placeholderTextColor="#aaa" value={empRole} onChangeText={setEmpRole} editable={!uploading} />
+            <TextInput style={styles.formInput} placeholder="Years at company (e.g. 3 years)" placeholderTextColor="#aaa" value={empYears} onChangeText={setEmpYears} editable={!uploading} />
+            <TextInput style={[styles.formInput, styles.formInputMulti]} placeholder="Short quote from the employee" placeholderTextColor="#aaa" value={videoQuote} onChangeText={setVideoQuote} multiline numberOfLines={3} editable={!uploading} />
+
+            {uploading ? (
+              <View style={styles.uploadingRow}>
+                <ActivityIndicator color="#1A5CFF" />
+                <Text style={styles.uploadingText}>{uploadProgress}</Text>
+              </View>
+            ) : (
+              <>
+                <TouchableOpacity style={styles.ctaBtn} onPress={submitUpload}>
+                  <Text style={styles.ctaBtnText}>Upload Video</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.dismissBtn} onPress={resetUploadForm}>
+                  <Text style={styles.dismissText}>Cancel</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
 
       <Modal visible={showUpgrade} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
@@ -353,4 +467,8 @@ const styles = StyleSheet.create({
   ctaBtnText: { color: 'white', fontSize: 15, fontWeight: '700' },
   dismissBtn: { alignItems: 'center', marginTop: 14 },
   dismissText: { fontSize: 13, color: '#aaa' },
+  formInput: { width: '100%', backgroundColor: '#f5f5f5', borderRadius: 10, padding: 13, fontSize: 14, color: '#333', marginBottom: 10 },
+  formInputMulti: { height: 80, textAlignVertical: 'top' },
+  uploadingRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 },
+  uploadingText: { fontSize: 13, color: '#888' },
 });

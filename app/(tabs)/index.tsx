@@ -16,7 +16,7 @@ export default function HomeScreen() {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <Text style={styles.logo}>Work<Text style={styles.logoAccent}>Here</Text></Text>
+          <Text style={styles.logo}>WhyWork<Text style={styles.logoAccent}>Here</Text></Text>
           <LangToggle />
         </View>
         <Text style={styles.headerSub}>{t('tagline')}</Text>

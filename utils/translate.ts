@@ -1,5 +1,4 @@
 // Detects if text is likely Spanish or English
-// Checks for Spanish-specific characters and common words
 const SPANISH_CHARS = /[ñáéíóúüÑÁÉÍÓÚÜ¿¡]/;
 const SPANISH_WORDS =
   /\b(hola|gracias|que|como|trabajas|horas|semana|cuantas|tiene|para|con|por|una|más|esto|aquí|hacer|bien|muy|también|trabajo|empresa|buenos|días|dónde|cuando|quién|cómo|qué|sí|pero|porque|puedo|quiero|necesito|cuál|favor|tengo)\b/i;
@@ -16,16 +15,21 @@ export async function translateText(
   from: SupportedLang,
   to: SupportedLang
 ): Promise<string> {
-  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`;
+  // Uses Google Translate's internal endpoint — no API key required
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(text)}`;
 
   const response = await fetch(url);
   if (!response.ok) throw new Error(`HTTP error ${response.status}`);
 
+  // Response is a nested array: data[0] contains translation chunks
+  // Each chunk is [translatedText, originalText], concatenate all chunks
   const data = await response.json();
+  const chunks: string[][] = data[0];
+  const translated = chunks
+    .map((chunk) => chunk[0])
+    .filter(Boolean)
+    .join('');
 
-  if (data.responseStatus === 200 && data.responseData?.translatedText) {
-    return decodeURIComponent(data.responseData.translatedText);
-  }
-
-  throw new Error(data.responseDetails ?? 'Translation failed');
+  if (!translated) throw new Error('Empty translation response');
+  return translated;
 }

@@ -1,98 +1,89 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import LangToggle from '../../components/LangToggle';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const { t } = useLanguage();
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const perks = [
+    { icon: '🏥', title: t('perk1Title'), desc: t('perk1Desc') },
+    { icon: '📈', title: t('perk2Title'), desc: t('perk2Desc') },
+    { icon: '🌴', title: t('perk3Title'), desc: t('perk3Desc') },
+    { icon: '🎓', title: t('perk4Title'), desc: t('perk4Desc') },
+  ];
+
+  return (
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <Text style={styles.logo}>Work<Text style={styles.logoAccent}>Here</Text></Text>
+          <LangToggle />
+        </View>
+        <Text style={styles.headerSub}>{t('tagline')}</Text>
+      </View>
+
+      <View style={styles.companyCard}>
+        <View style={styles.companyLogo}>
+          <Text style={styles.companyLogoText}>A</Text>
+        </View>
+        <Text style={styles.companyName}>Apex Technologies</Text>
+        <Text style={styles.companyTagline}>Where bold ideas become real products</Text>
+        <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <Text style={styles.statNum}>2,400</Text>
+            <Text style={styles.statLbl}>{t('employees')}</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statNum}>4.7★</Text>
+            <Text style={styles.statLbl}>{t('rating')}</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statNum}>94%</Text>
+            <Text style={styles.statLbl}>{t('recommend')}</Text>
+          </View>
+        </View>
+      </View>
+
+      <Text style={styles.sectionLabel}>{t('whyWorkHere')}</Text>
+      <View style={styles.perksGrid}>
+        {perks.map((perk, i) => (
+          <View key={i} style={styles.perkCard}>
+            <Text style={styles.perkIcon}>{perk.icon}</Text>
+            <Text style={styles.perkTitle}>{perk.title}</Text>
+            <Text style={styles.perkDesc}>{perk.desc}</Text>
+          </View>
+        ))}
+      </View>
+
+      <TouchableOpacity style={styles.ctaBtn}>
+        <Text style={styles.ctaBtnText}>{t('watchVideos')}</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  header: { backgroundColor: '#1A5CFF', padding: 24, paddingTop: 60 },
+  headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  logo: { fontSize: 28, fontWeight: '700', color: 'white' },
+  logoAccent: { color: '#7BB3FF' },
+  headerSub: { fontSize: 14, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
+  companyCard: { backgroundColor: '#1A5CFF', padding: 20, paddingTop: 0, paddingBottom: 24 },
+  companyLogo: { width: 56, height: 56, borderRadius: 12, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  companyLogoText: { fontSize: 24, fontWeight: '700', color: '#1A5CFF' },
+  companyName: { fontSize: 22, fontWeight: '700', color: 'white', marginBottom: 2 },
+  companyTagline: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginBottom: 16 },
+  statsRow: { flexDirection: 'row', gap: 24 },
+  statItem: { alignItems: 'center' },
+  statNum: { fontSize: 20, fontWeight: '700', color: 'white' },
+  statLbl: { fontSize: 10, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase' },
+  sectionLabel: { fontSize: 13, fontWeight: '600', color: '#333', margin: 16, marginBottom: 8 },
+  perksGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, gap: 8 },
+  perkCard: { backgroundColor: 'white', borderRadius: 10, padding: 12, width: '47%' },
+  perkIcon: { fontSize: 20, marginBottom: 4 },
+  perkTitle: { fontSize: 12, fontWeight: '600', color: '#333' },
+  perkDesc: { fontSize: 11, color: '#888', marginTop: 2 },
+  ctaBtn: { backgroundColor: '#1A5CFF', margin: 16, padding: 16, borderRadius: 12, alignItems: 'center' },
+  ctaBtnText: { color: 'white', fontSize: 15, fontWeight: '600' },
 });

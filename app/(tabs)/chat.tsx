@@ -1,0 +1,110 @@
+import { useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import LangToggle from '../../components/LangToggle';
+import { useLanguage } from '../../contexts/LanguageContext';
+
+type Message = {
+  id: number;
+  from: string;
+  name?: string;
+  text: string;
+  translated: string | null;
+};
+
+const initialMessages: Message[] = [
+  { id: 1, from: 'them', name: 'Maria', text: 'Hi! Happy to answer any questions!', translated: null },
+  { id: 2, from: 'me', text: 'Cuantas horas trabajas por semana?', translated: 'Translated: How many hours do you work per week?' },
+  { id: 3, from: 'them', name: 'Maria', text: 'Honestly, 40-45 hrs. Family comes first here.', translated: 'Traducido: Honestamente, 40-45 horas.' },
+];
+
+export default function ChatScreen() {
+  const { t } = useLanguage();
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [input, setInput] = useState('');
+
+  const sendMessage = () => {
+    if (!input.trim()) return;
+    setMessages([...messages, { id: messages.length + 1, from: 'me', text: input, translated: null }]);
+    setInput('');
+  };
+
+  return (
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.title}>{t('chatWith')}</Text>
+            <Text style={styles.sub}>{t('chatSub')}</Text>
+          </View>
+          <LangToggle />
+        </View>
+      </View>
+
+      <View style={styles.langBar}>
+        <View style={styles.langPill}><Text style={styles.langText}>EN</Text></View>
+        <Text style={styles.langArrow}>⇄</Text>
+        <View style={styles.langPill}><Text style={styles.langText}>ES</Text></View>
+        <Text style={styles.langNote}>{t('autoTranslate')}</Text>
+      </View>
+
+      <ScrollView style={styles.chatArea} contentContainerStyle={{ padding: 16, gap: 12 }}>
+        {messages.map((msg) => (
+          <View key={msg.id} style={msg.from === 'me' ? styles.meWrapper : styles.themWrapper}>
+            {msg.from === 'them' && <Text style={styles.senderName}>{msg.name}</Text>}
+            <View style={[styles.bubble, msg.from === 'me' ? styles.meBubble : styles.themBubble]}>
+              <Text style={[styles.bubbleText, msg.from === 'me' ? styles.meText : styles.themText]}>{msg.text}</Text>
+            </View>
+            {msg.translated && (
+              <View style={styles.translatedTag}>
+                <Text style={styles.translatedText}>{msg.translated}</Text>
+              </View>
+            )}
+          </View>
+        ))}
+      </ScrollView>
+
+      <View style={styles.inputBar}>
+        <TextInput
+          style={styles.input}
+          value={input}
+          onChangeText={setInput}
+          placeholder={t('chatPlaceholder')}
+          placeholderTextColor="#aaa"
+          onSubmitEditing={sendMessage}
+        />
+        <TouchableOpacity style={styles.sendBtn} onPress={sendMessage}>
+          <Text style={styles.sendIcon}>▶</Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  header: { backgroundColor: '#1A5CFF', padding: 24, paddingTop: 60 },
+  headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  title: { fontSize: 20, fontWeight: '700', color: 'white' },
+  sub: { fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 3 },
+  langBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', padding: 10, paddingHorizontal: 16, gap: 8, borderBottomWidth: 0.5, borderBottomColor: '#eee' },
+  langPill: { backgroundColor: '#E8EFFE', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20 },
+  langText: { color: '#1A5CFF', fontSize: 12, fontWeight: '600' },
+  langArrow: { fontSize: 16, color: '#888' },
+  langNote: { fontSize: 11, color: '#888', marginLeft: 4 },
+  chatArea: { flex: 1 },
+  themWrapper: { alignItems: 'flex-start', marginBottom: 8 },
+  meWrapper: { alignItems: 'flex-end', marginBottom: 8 },
+  senderName: { fontSize: 11, color: '#888', marginBottom: 3 },
+  bubble: { maxWidth: '80%', padding: 10, borderRadius: 14 },
+  themBubble: { backgroundColor: 'white', borderBottomLeftRadius: 4 },
+  meBubble: { backgroundColor: '#1A5CFF', borderBottomRightRadius: 4 },
+  bubbleText: { fontSize: 13, lineHeight: 20 },
+  themText: { color: '#333' },
+  meText: { color: 'white' },
+  translatedTag: { backgroundColor: '#E1F5EE', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4, marginTop: 4 },
+  translatedText: { fontSize: 10, color: '#1D9E75' },
+  inputBar: { flexDirection: 'row', padding: 12, gap: 8, backgroundColor: 'white', borderTopWidth: 0.5, borderTopColor: '#eee' },
+  input: { flex: 1, backgroundColor: '#f5f5f5', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, fontSize: 13, color: '#333' },
+  sendBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#1A5CFF', alignItems: 'center', justifyContent: 'center' },
+  sendIcon: { color: 'white', fontSize: 12, marginLeft: 2 },
+});

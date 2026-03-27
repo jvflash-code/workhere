@@ -1,63 +1,59 @@
 import { useState } from 'react';
-import {
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import LangToggle from '../../components/LangToggle';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 type Plan = 'starter' | 'growth' | 'pro';
 
-const videos = [
-  { initials: 'MR', name: 'Maria Rodriguez', role: 'Engineer · 1:24 · 312 views', color: '#1A5CFF', status: 'Live' },
-  { initials: 'JL', name: 'James Liu', role: 'Designer · 2:01 · 198 views', color: '#1D9E75', status: 'Live' },
-  { initials: 'SK', name: 'Alex Chen', role: 'Marketing · 1:12 · Under review', color: '#BA7517', status: 'Pending' },
-];
-
-const plans = [
-  {
-    id: 'starter' as Plan,
-    name: 'Starter',
-    monthlyPrice: 0,
-    annualPrice: 0,
-    color: '#888',
-    badge: null,
-    features: ['1 employee video', 'Unlimited job seeker chats', 'Basic company profile'],
-    limit: '1 video max',
-  },
-  {
-    id: 'growth' as Plan,
-    name: 'Growth',
-    monthlyPrice: 49,
-    annualPrice: 39,
-    color: '#1A5CFF',
-    badge: 'Popular',
-    features: ['Up to 5 employee videos', 'Unlimited chats + EN/ES translation', 'Basic analytics dashboard', 'Priority video review'],
-    limit: '5 videos max',
-  },
-  {
-    id: 'pro' as Plan,
-    name: 'Pro',
-    monthlyPrice: 149,
-    annualPrice: 119,
-    color: '#6C3DE8',
-    badge: 'Best value',
-    features: ['Unlimited employee videos', 'Unlimited chats + EN/ES translation', 'Full analytics + chat transcripts', 'Priority support', 'Featured company placement'],
-    limit: 'Unlimited',
-  },
+const videoData = [
+  { initials: 'MR', name: 'Maria Rodriguez', role: 'Engineer · 1:24 · 312 views', color: '#1A5CFF', statusKey: 'live' as const },
+  { initials: 'JL', name: 'James Liu', role: 'Designer · 2:01 · 198 views', color: '#1D9E75', statusKey: 'live' as const },
+  { initials: 'SK', name: 'Alex Chen', role: 'Marketing · 1:12 · Under review', color: '#BA7517', statusKey: 'pending' as const },
 ];
 
 export default function AdminScreen() {
+  const { t } = useLanguage();
   const [currentPlan, setCurrentPlan] = useState<Plan>('starter');
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [annual, setAnnual] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan>('growth');
 
+  const plans = [
+    {
+      id: 'starter' as Plan,
+      name: 'Starter',
+      monthlyPrice: 0,
+      annualPrice: 0,
+      color: '#888',
+      badge: null,
+      features: [t('starterF1'), t('starterF2'), t('starterF3')],
+      limit: t('starterLimit'),
+    },
+    {
+      id: 'growth' as Plan,
+      name: 'Growth',
+      monthlyPrice: 49,
+      annualPrice: 39,
+      color: '#1A5CFF',
+      badge: t('popular'),
+      features: [t('growthF1'), t('growthF2'), t('growthF3'), t('growthF4')],
+      limit: t('growthLimit'),
+    },
+    {
+      id: 'pro' as Plan,
+      name: 'Pro',
+      monthlyPrice: 149,
+      annualPrice: 119,
+      color: '#6C3DE8',
+      badge: t('bestValue'),
+      features: [t('proF1'), t('proF2'), t('proF3'), t('proF4'), t('proF5')],
+      limit: t('proLimit'),
+    },
+  ];
+
   const activePlan = plans.find((p) => p.id === currentPlan)!;
   const videoLimit = currentPlan === 'starter' ? 1 : currentPlan === 'growth' ? 5 : 999;
-  const videosUsed = videos.filter((v) => v.status === 'Live').length;
+  const videosUsed = videoData.filter((v) => v.statusKey === 'live').length;
   const atLimit = videosUsed >= videoLimit;
 
   function confirmUpgrade() {
@@ -68,55 +64,59 @@ export default function AdminScreen() {
   return (
     <View style={styles.root}>
       <ScrollView style={styles.container}>
-        {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.label}>Company dashboard</Text>
-          <Text style={styles.title}>Apex Technologies</Text>
+          <View style={styles.headerTop}>
+            <View>
+              <Text style={styles.label}>{t('companyDashboard')}</Text>
+              <Text style={styles.title}>Apex Technologies</Text>
+            </View>
+            <LangToggle />
+          </View>
         </View>
 
-        {/* Metrics */}
         <View style={styles.metricsRow}>
           <View style={styles.metric}>
             <Text style={styles.metricVal}>1,204</Text>
-            <Text style={styles.metricLbl}>Profile views</Text>
+            <Text style={styles.metricLbl}>{t('profileViews')}</Text>
           </View>
           <View style={styles.metric}>
             <Text style={styles.metricVal}>{videosUsed}</Text>
-            <Text style={styles.metricLbl}>Videos live</Text>
+            <Text style={styles.metricLbl}>{t('videosLive')}</Text>
           </View>
           <View style={styles.metric}>
             <Text style={styles.metricVal}>47</Text>
-            <Text style={styles.metricLbl}>Chats this week</Text>
+            <Text style={styles.metricLbl}>{t('chatsThisWeek')}</Text>
           </View>
         </View>
 
-        {/* Upload zone */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Employee videos</Text>
+          <Text style={styles.sectionLabel}>{t('employeeVideos')}</Text>
           {atLimit ? (
             <View style={styles.lockedZone}>
               <Text style={styles.lockIcon}>🔒</Text>
-              <Text style={styles.lockedTitle}>Video limit reached</Text>
+              <Text style={styles.lockedTitle}>{t('videoLimitTitle')}</Text>
               <Text style={styles.lockedSub}>
-                Your {activePlan.name} plan allows {videoLimit} video{videoLimit > 1 ? 's' : ''}. Upgrade to add more.
+                {t('videoLimitDesc')
+                  .replace('{plan}', activePlan.name)
+                  .replace('{count}', String(videoLimit))
+                  .replace('{plural}', videoLimit > 1 ? 's' : '')}
               </Text>
               <TouchableOpacity style={styles.upgradeInlineBtn} onPress={() => setShowUpgrade(true)}>
-                <Text style={styles.upgradeInlineBtnText}>Upgrade plan →</Text>
+                <Text style={styles.upgradeInlineBtnText}>{t('upgradePlan')}</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <TouchableOpacity style={styles.uploadZone}>
               <Text style={styles.uploadIcon}>🎬</Text>
-              <Text style={styles.uploadText}>Tap to record or upload</Text>
-              <Text style={styles.uploadSub}>MP4, MOV · up to 3 min</Text>
+              <Text style={styles.uploadText}>{t('tapToUpload')}</Text>
+              <Text style={styles.uploadSub}>{t('uploadFormats')}</Text>
             </TouchableOpacity>
           )}
         </View>
 
-        {/* Testimonials */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Active testimonials</Text>
-          {videos.map((v, i) => (
+          <Text style={styles.sectionLabel}>{t('activeTestimonials')}</Text>
+          {videoData.map((v, i) => (
             <View key={i} style={styles.videoRow}>
               <View style={[styles.avatar, { backgroundColor: v.color }]}>
                 <Text style={styles.avatarText}>{v.initials}</Text>
@@ -125,18 +125,17 @@ export default function AdminScreen() {
                 <Text style={styles.videoName}>{v.name}</Text>
                 <Text style={styles.videoMeta}>{v.role}</Text>
               </View>
-              <View style={[styles.statusBadge, v.status === 'Live' ? styles.statusLive : styles.statusPending]}>
-                <Text style={[styles.statusText, v.status === 'Live' ? styles.statusLiveText : styles.statusPendingText]}>
-                  {v.status}
+              <View style={[styles.statusBadge, v.statusKey === 'live' ? styles.statusLive : styles.statusPending]}>
+                <Text style={[styles.statusText, v.statusKey === 'live' ? styles.statusLiveText : styles.statusPendingText]}>
+                  {v.statusKey === 'live' ? t('live') : t('pending')}
                 </Text>
               </View>
             </View>
           ))}
         </View>
 
-        {/* Subscription */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Subscription</Text>
+          <Text style={styles.sectionLabel}>{t('subscription')}</Text>
           <View style={styles.subCard}>
             <View>
               <Text style={styles.subPlan}>{activePlan.name} Plan</Text>
@@ -146,7 +145,7 @@ export default function AdminScreen() {
               style={[styles.upgradeBtn, currentPlan === 'pro' && styles.upgradeBtnDisabled]}
               onPress={() => currentPlan !== 'pro' && setShowUpgrade(true)}>
               <Text style={styles.upgradeBtnText}>
-                {currentPlan === 'pro' ? 'Max plan' : 'Upgrade'}
+                {currentPlan === 'pro' ? t('maxPlan') : t('upgrade')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -155,33 +154,29 @@ export default function AdminScreen() {
         <View style={{ height: 40 }} />
       </ScrollView>
 
-      {/* Upgrade Modal */}
       <Modal visible={showUpgrade} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalSheet}>
             <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>{t('choosePlan')}</Text>
+            <Text style={styles.modalSub}>{t('paywallSub')}</Text>
 
-            <Text style={styles.modalTitle}>Choose your plan</Text>
-            <Text style={styles.modalSub}>Your employees tell your story. Job seekers ask them directly.</Text>
-
-            {/* Billing toggle */}
             <View style={styles.toggleRow}>
               <TouchableOpacity
                 style={[styles.toggleOption, !annual && styles.toggleActive]}
                 onPress={() => setAnnual(false)}>
-                <Text style={[styles.toggleText, !annual && styles.toggleActiveText]}>Monthly</Text>
+                <Text style={[styles.toggleText, !annual && styles.toggleActiveText]}>{t('monthly')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.toggleOption, annual && styles.toggleActive]}
                 onPress={() => setAnnual(true)}>
-                <Text style={[styles.toggleText, annual && styles.toggleActiveText]}>Annual</Text>
+                <Text style={[styles.toggleText, annual && styles.toggleActiveText]}>{t('annual')}</Text>
                 <View style={styles.saveBadge}>
-                  <Text style={styles.saveBadgeText}>Save 20%</Text>
+                  <Text style={styles.saveBadgeText}>{t('save20')}</Text>
                 </View>
               </TouchableOpacity>
             </View>
 
-            {/* Plan cards */}
             {plans.map((plan) => {
               const price = annual ? plan.annualPrice : plan.monthlyPrice;
               const isSelected = selectedPlan === plan.id;
@@ -204,14 +199,14 @@ export default function AdminScreen() {
                         )}
                         {isCurrent && (
                           <View style={styles.currentBadge}>
-                            <Text style={styles.currentBadgeText}>Current</Text>
+                            <Text style={styles.currentBadgeText}>{t('current')}</Text>
                           </View>
                         )}
                       </View>
                       <Text style={styles.planPrice}>
-                        {price === 0 ? 'Free' : `$${price}/mo`}
+                        {price === 0 ? t('free') : `$${price}/mo`}
                         {annual && price > 0 && (
-                          <Text style={styles.planPriceSub}> billed annually</Text>
+                          <Text style={styles.planPriceSub}> {t('billedAnnually')}</Text>
                         )}
                       </Text>
                     </View>
@@ -229,7 +224,6 @@ export default function AdminScreen() {
               );
             })}
 
-            {/* CTA */}
             <TouchableOpacity
               style={[
                 styles.ctaBtn,
@@ -240,15 +234,15 @@ export default function AdminScreen() {
               disabled={selectedPlan === currentPlan}>
               <Text style={styles.ctaBtnText}>
                 {selectedPlan === currentPlan
-                  ? 'Already on this plan'
+                  ? t('alreadyOnPlan')
                   : selectedPlan === 'starter'
-                  ? 'Downgrade to Free'
-                  : `Upgrade to ${plans.find((p) => p.id === selectedPlan)?.name}`}
+                  ? t('downgradeFree')
+                  : `${t('upgradeTo')} ${plans.find((p) => p.id === selectedPlan)?.name}`}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.dismissBtn} onPress={() => setShowUpgrade(false)}>
-              <Text style={styles.dismissText}>Maybe later</Text>
+              <Text style={styles.dismissText}>{t('maybeLater')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -261,6 +255,7 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   container: { flex: 1, backgroundColor: '#f5f5f5' },
   header: { backgroundColor: '#1A5CFF', padding: 24, paddingTop: 60 },
+  headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   label: { fontSize: 11, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: 0.8 },
   title: { fontSize: 20, fontWeight: '700', color: 'white', marginTop: 4 },
   metricsRow: { flexDirection: 'row', backgroundColor: 'white', borderBottomWidth: 0.5, borderBottomColor: '#eee' },
@@ -297,7 +292,6 @@ const styles = StyleSheet.create({
   upgradeBtn: { backgroundColor: '#1A5CFF', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   upgradeBtnDisabled: { backgroundColor: '#E1F5EE' },
   upgradeBtnText: { color: 'white', fontSize: 13, fontWeight: '600' },
-  // Modal
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   modalSheet: { backgroundColor: 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 48 },
   modalHandle: { width: 36, height: 4, backgroundColor: '#ddd', borderRadius: 2, alignSelf: 'center', marginBottom: 20 },

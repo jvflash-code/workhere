@@ -11,7 +11,9 @@ import {
   View,
 } from 'react-native';
 import LangToggle from '../../components/LangToggle';
+import SignInSheet from '../../components/SignInSheet';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useAuth } from '../../hooks/useAuth';
 import { detectLanguage, translateText } from '../../utils/translate';
 
 type Message = {
@@ -35,6 +37,8 @@ const initialMessages: Message[] = [
 
 export default function ChatScreen() {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const [showSignIn, setShowSignIn] = useState(false);
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -76,6 +80,43 @@ export default function ChatScreen() {
       setSending(false);
       setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
     }
+  }
+
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerTop}>
+            <View>
+              <Text style={styles.title}>{t('chatWith')}</Text>
+              <Text style={styles.sub}>{t('chatSub')}</Text>
+            </View>
+            <LangToggle />
+          </View>
+        </View>
+
+        {/* Language bar */}
+        <View style={styles.langBar}>
+          <View style={styles.langPill}><Text style={styles.langText}>EN</Text></View>
+          <Text style={styles.langArrow}>⇄</Text>
+          <View style={styles.langPill}><Text style={styles.langText}>ES</Text></View>
+          <Text style={styles.langNote}>{t('autoTranslate')}</Text>
+        </View>
+
+        {/* Locked guest view */}
+        <View style={styles.guestArea}>
+          <Text style={styles.lockIcon}>🔒</Text>
+          <Text style={styles.guestTitle}>Sign in to chat with employees</Text>
+          <Text style={styles.guestSub}>Get honest answers about what it's really like to work here.</Text>
+          <TouchableOpacity style={styles.signInBtn} onPress={() => setShowSignIn(true)}>
+            <Text style={styles.signInBtnText}>Sign In</Text>
+          </TouchableOpacity>
+        </View>
+
+        <SignInSheet visible={showSignIn} onClose={() => setShowSignIn(false)} />
+      </View>
+    );
   }
 
   return (
@@ -191,4 +232,10 @@ const styles = StyleSheet.create({
   sendBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#1A5CFF', alignItems: 'center', justifyContent: 'center' },
   sendBtnDisabled: { backgroundColor: '#7BA7FF' },
   sendIcon: { color: 'white', fontSize: 12, marginLeft: 2 },
+  guestArea: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
+  lockIcon: { fontSize: 48, marginBottom: 16 },
+  guestTitle: { fontSize: 18, fontWeight: '700', color: '#333', textAlign: 'center', marginBottom: 8 },
+  guestSub: { fontSize: 14, color: '#888', textAlign: 'center', lineHeight: 20, marginBottom: 28 },
+  signInBtn: { backgroundColor: '#1A5CFF', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 40 },
+  signInBtnText: { color: 'white', fontSize: 15, fontWeight: '600' },
 });

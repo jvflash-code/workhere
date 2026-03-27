@@ -60,6 +60,7 @@ export default function HomeScreen() {
                 <Text style={styles.statLbl}>{t('recommend')}</Text>
               </View>
             </View>
+            <Text style={styles.surveyNote}>* Based on internal employee survey</Text>
           </>
         )}
       </View>
@@ -99,6 +100,7 @@ const styles = StyleSheet.create({
   statItem: { alignItems: 'center' },
   statNum: { fontSize: 20, fontWeight: '700', color: 'white' },
   statLbl: { fontSize: 10, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase' },
+  surveyNote: { fontSize: 10, color: 'rgba(255,255,255,0.5)', marginTop: 12 },
   sectionLabel: { fontSize: 13, fontWeight: '600', color: '#333', margin: 16, marginBottom: 8 },
   perksGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, gap: 8 },
   perkCard: { backgroundColor: 'white', borderRadius: 10, padding: 12, width: '47%' },

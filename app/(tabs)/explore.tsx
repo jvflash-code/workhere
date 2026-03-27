@@ -1,38 +1,24 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import LangToggle from '../../components/LangToggle';
 import VideoPlayer from '../../components/VideoPlayer';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useVideos, VideoItem } from '../../hooks/useCompany';
 
-type VideoItem = {
+const COMPANY_ID = '00000000-0000-0000-0000-000000000001';
+
+type ActiveVideo = {
   initials: string;
   name: string;
   role: string;
-  years: string;
-  duration: string;
   color: string;
-  quote: string;
   videoUri: string;
 };
 
-// Free sample videos from Google's public test bucket
-const VIDEO_URIS = [
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-];
-
 export default function VideosScreen() {
   const { t } = useLanguage();
-  const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
-
-  const videos: VideoItem[] = [
-    { initials: 'MR', name: 'Maria Rodriguez', role: t('roleSoftwareEngineer'), years: '3 yrs', duration: '1:24', color: '#1A5CFF', quote: t('quote1'), videoUri: VIDEO_URIS[0] },
-    { initials: 'JL', name: 'James Liu', role: t('roleDesigner'), years: '5 yrs', duration: '2:01', color: '#1D9E75', quote: t('quote2'), videoUri: VIDEO_URIS[1] },
-    { initials: 'SK', name: 'Sara Kim', role: t('rolePM'), years: '2 yrs', duration: '1:45', color: '#BA7517', quote: t('quote3'), videoUri: VIDEO_URIS[2] },
-    { initials: 'TP', name: 'Tom Parker', role: t('roleSales'), years: '4 yrs', duration: '0:58', color: '#993556', quote: t('quote4'), videoUri: VIDEO_URIS[3] },
-  ];
+  const { videos, loading } = useVideos(COMPANY_ID);
+  const [activeVideo, setActiveVideo] = useState<ActiveVideo | null>(null);
 
   return (
     <>
@@ -47,34 +33,44 @@ export default function VideosScreen() {
           </View>
         </View>
 
-        {videos.map((v, i) => (
-          <View key={i} style={styles.card}>
-            <View style={styles.cardTop}>
-              <View style={[styles.avatar, { backgroundColor: v.color }]}>
-                <Text style={styles.avatarText}>{v.initials}</Text>
-              </View>
-              <View style={styles.cardInfo}>
-                <Text style={styles.name}>{v.name}</Text>
-                <Text style={styles.role}>{v.role} · {v.years}</Text>
-              </View>
-            </View>
+        {loading ? (
+          <ActivityIndicator color="#1A5CFF" size="large" style={styles.loader} />
+        ) : (
+          videos.map((v: VideoItem) => {
+            const emp = v.employees;
+            return (
+              <View key={v.id} style={styles.card}>
+                <View style={styles.cardTop}>
+                  <View style={[styles.avatar, { backgroundColor: emp.color }]}>
+                    <Text style={styles.avatarText}>{emp.initials}</Text>
+                  </View>
+                  <View style={styles.cardInfo}>
+                    <Text style={styles.name}>{emp.name}</Text>
+                    <Text style={styles.role}>{emp.role} · {emp.years_at_company}</Text>
+                  </View>
+                </View>
 
-            {/* Tappable video thumbnail */}
-            <TouchableOpacity style={styles.videoThumb} onPress={() => setActiveVideo(v)} activeOpacity={0.85}>
-              <View style={styles.playBtn}>
-                <Text style={styles.playIcon}>▶</Text>
+                {/* Tappable video thumbnail */}
+                <TouchableOpacity
+                  style={styles.videoThumb}
+                  onPress={() => setActiveVideo({ initials: emp.initials, name: emp.name, role: emp.role, color: emp.color, videoUri: v.video_url })}
+                  activeOpacity={0.85}>
+                  <View style={styles.playBtn}>
+                    <Text style={styles.playIcon}>▶</Text>
+                  </View>
+                  <Text style={styles.tapHint}>Tap to play</Text>
+                  <Text style={styles.duration}>{v.duration}</Text>
+                </TouchableOpacity>
+
+                <Text style={styles.quote}>{v.quote}</Text>
+
+                <TouchableOpacity style={styles.askBtn}>
+                  <Text style={styles.askBtnText}>{emp.name.split(' ')[0]} — {t('askQuestion')}</Text>
+                </TouchableOpacity>
               </View>
-              <Text style={styles.tapHint}>Tap to play</Text>
-              <Text style={styles.duration}>{v.duration}</Text>
-            </TouchableOpacity>
-
-            <Text style={styles.quote}>{v.quote}</Text>
-
-            <TouchableOpacity style={styles.askBtn}>
-              <Text style={styles.askBtnText}>{v.name.split(' ')[0]} — {t('askQuestion')}</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
+            );
+          })
+        )}
 
         <View style={{ height: 24 }} />
       </ScrollView>
@@ -101,6 +97,7 @@ const styles = StyleSheet.create({
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   title: { fontSize: 22, fontWeight: '700', color: 'white' },
   sub: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
+  loader: { marginTop: 60 },
   card: { backgroundColor: 'white', margin: 12, marginBottom: 0, borderRadius: 14, padding: 16 },
   cardTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 10 },
   avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },

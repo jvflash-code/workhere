@@ -1,9 +1,13 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import LangToggle from '../../components/LangToggle';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useCompany } from '../../hooks/useCompany';
+
+const COMPANY_ID = '00000000-0000-0000-0000-000000000001';
 
 export default function HomeScreen() {
   const { t } = useLanguage();
+  const { company, loading } = useCompany(COMPANY_ID);
 
   const perks = [
     { icon: '🏥', title: t('perk1Title'), desc: t('perk1Desc') },
@@ -23,25 +27,41 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.companyCard}>
-        <View style={styles.companyLogo}>
-          <Text style={styles.companyLogoText}>A</Text>
-        </View>
-        <Text style={styles.companyName}>Apex Technologies</Text>
-        <Text style={styles.companyTagline}>Where bold ideas become real products</Text>
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNum}>2,400</Text>
-            <Text style={styles.statLbl}>{t('employees')}</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNum}>4.7★</Text>
-            <Text style={styles.statLbl}>{t('rating')}</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNum}>94%</Text>
-            <Text style={styles.statLbl}>{t('recommend')}</Text>
-          </View>
-        </View>
+        {loading ? (
+          <ActivityIndicator color="white" size="large" style={styles.loader} />
+        ) : (
+          <>
+            <View style={styles.companyLogo}>
+              <Text style={styles.companyLogoText}>
+                {company?.name ? company.name.charAt(0) : 'A'}
+              </Text>
+            </View>
+            <Text style={styles.companyName}>{company?.name ?? '—'}</Text>
+            <Text style={styles.companyTagline}>{company?.tagline ?? ''}</Text>
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <Text style={styles.statNum}>
+                  {company?.employee_count != null
+                    ? company.employee_count.toLocaleString()
+                    : '—'}
+                </Text>
+                <Text style={styles.statLbl}>{t('employees')}</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statNum}>
+                  {company?.rating != null ? `${company.rating}★` : '—'}
+                </Text>
+                <Text style={styles.statLbl}>{t('rating')}</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statNum}>
+                  {company?.recommend_pct != null ? `${company.recommend_pct}%` : '—'}
+                </Text>
+                <Text style={styles.statLbl}>{t('recommend')}</Text>
+              </View>
+            </View>
+          </>
+        )}
       </View>
 
       <Text style={styles.sectionLabel}>{t('whyWorkHere')}</Text>
@@ -70,6 +90,7 @@ const styles = StyleSheet.create({
   logoAccent: { color: '#7BB3FF' },
   headerSub: { fontSize: 14, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
   companyCard: { backgroundColor: '#1A5CFF', padding: 20, paddingTop: 0, paddingBottom: 24 },
+  loader: { paddingVertical: 32 },
   companyLogo: { width: 56, height: 56, borderRadius: 12, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
   companyLogoText: { fontSize: 24, fontWeight: '700', color: '#1A5CFF' },
   companyName: { fontSize: 22, fontWeight: '700', color: 'white', marginBottom: 2 },

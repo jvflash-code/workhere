@@ -1,18 +1,17 @@
 import { useState } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import LangToggle from '../../components/LangToggle';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useAllVideos, useCompany, VideoItem } from '../../hooks/useCompany';
+
+const COMPANY_ID = '00000000-0000-0000-0000-000000000001';
 
 type Plan = 'starter' | 'growth' | 'pro';
 
-const videoData = [
-  { initials: 'MR', name: 'Maria Rodriguez', role: 'Engineer · 1:24 · 312 views', color: '#1A5CFF', statusKey: 'live' as const },
-  { initials: 'JL', name: 'James Liu', role: 'Designer · 2:01 · 198 views', color: '#1D9E75', statusKey: 'live' as const },
-  { initials: 'SK', name: 'Alex Chen', role: 'Marketing · 1:12 · Under review', color: '#BA7517', statusKey: 'pending' as const },
-];
-
 export default function AdminScreen() {
   const { t } = useLanguage();
+  const { company } = useCompany(COMPANY_ID);
+  const { videos, loading: videosLoading } = useAllVideos(COMPANY_ID);
   const [currentPlan, setCurrentPlan] = useState<Plan>('growth');
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [annual, setAnnual] = useState(false);
@@ -53,7 +52,7 @@ export default function AdminScreen() {
 
   const activePlan = plans.find((p) => p.id === currentPlan)!;
   const videoLimit = currentPlan === 'starter' ? 1 : currentPlan === 'growth' ? 5 : 999;
-  const videosUsed = videoData.filter((v) => v.statusKey === 'live').length;
+  const videosUsed = videos.filter((v: VideoItem) => v.status === 'live').length;
   const atLimit = videosUsed >= videoLimit;
 
   function confirmUpgrade() {
@@ -68,7 +67,7 @@ export default function AdminScreen() {
           <View style={styles.headerTop}>
             <View>
               <Text style={styles.label}>{t('companyDashboard')}</Text>
-              <Text style={styles.title}>Apex Technologies</Text>
+              <Text style={styles.title}>{company?.name ?? 'Loading...'}</Text>
             </View>
             <LangToggle />
           </View>
@@ -80,7 +79,7 @@ export default function AdminScreen() {
             <Text style={styles.metricLbl}>{t('profileViews')}</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricVal}>{videosUsed}</Text>
+            <Text style={styles.metricVal}>{videosLoading ? '—' : videosUsed}</Text>
             <Text style={styles.metricLbl}>{t('videosLive')}</Text>
           </View>
           <View style={styles.metric}>
@@ -118,22 +117,32 @@ export default function AdminScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>{t('activeTestimonials')}</Text>
-          {videoData.map((v, i) => (
-            <View key={i} style={styles.videoRow}>
-              <View style={[styles.avatar, { backgroundColor: v.color }]}>
-                <Text style={styles.avatarText}>{v.initials}</Text>
-              </View>
-              <View style={styles.videoInfo}>
-                <Text style={styles.videoName}>{v.name}</Text>
-                <Text style={styles.videoMeta}>{v.role}</Text>
-              </View>
-              <View style={[styles.statusBadge, v.statusKey === 'live' ? styles.statusLive : styles.statusPending]}>
-                <Text style={[styles.statusText, v.statusKey === 'live' ? styles.statusLiveText : styles.statusPendingText]}>
-                  {v.statusKey === 'live' ? t('live') : t('pending')}
-                </Text>
-              </View>
-            </View>
-          ))}
+          {videosLoading ? (
+            <ActivityIndicator color="#1A5CFF" size="small" style={{ marginVertical: 12 }} />
+          ) : (
+            videos.map((v: VideoItem) => {
+              const emp = v.employees;
+              const isLive = v.status === 'live';
+              return (
+                <View key={v.id} style={styles.videoRow}>
+                  <View style={[styles.avatar, { backgroundColor: emp.color }]}>
+                    <Text style={styles.avatarText}>{emp.initials}</Text>
+                  </View>
+                  <View style={styles.videoInfo}>
+                    <Text style={styles.videoName}>{emp.name}</Text>
+                    <Text style={styles.videoMeta}>
+                      {emp.role} · {v.duration} · {v.views} views
+                    </Text>
+                  </View>
+                  <View style={[styles.statusBadge, isLive ? styles.statusLive : styles.statusPending]}>
+                    <Text style={[styles.statusText, isLive ? styles.statusLiveText : styles.statusPendingText]}>
+                      {isLive ? t('live') : t('pending')}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })
+          )}
         </View>
 
         <View style={styles.section}>

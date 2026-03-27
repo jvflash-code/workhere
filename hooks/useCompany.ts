@@ -71,3 +71,23 @@ export function useVideos(companyId: string) {
 
   return { videos, loading, error };
 }
+
+export function useAllVideos(companyId: string) {
+  const [videos, setVideos] = useState<VideoItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from('videos')
+      .select(`*, employees(*)`)
+      .eq('company_id', companyId)
+      .then(({ data, error }) => {
+        if (error) setError(error.message);
+        else setVideos(data ?? []);
+        setLoading(false);
+      });
+  }, [companyId]);
+
+  return { videos, loading, error };
+}

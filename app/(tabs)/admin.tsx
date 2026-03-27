@@ -107,7 +107,9 @@ export default function AdminScreen() {
             </View>
           ) : (
             <TouchableOpacity style={styles.uploadZone}>
-              <Text style={styles.uploadIcon}>🎬</Text>
+              <View style={styles.recordBtn}>
+                <View style={styles.recordDot} />
+              </View>
               <Text style={styles.uploadText}>{t('tapToUpload')}</Text>
               <Text style={styles.uploadSub}>{t('uploadFormats')}</Text>
             </TouchableOpacity>
@@ -265,7 +267,8 @@ const styles = StyleSheet.create({
   section: { padding: 16, paddingBottom: 0 },
   sectionLabel: { fontSize: 13, fontWeight: '600', color: '#333', marginBottom: 10 },
   uploadZone: { borderWidth: 1.5, borderColor: '#ddd', borderStyle: 'dashed', borderRadius: 12, padding: 24, alignItems: 'center' },
-  uploadIcon: { fontSize: 28, marginBottom: 6 },
+  recordBtn: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#fff0f0', borderWidth: 2.5, borderColor: '#ff3b30', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  recordDot: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#ff3b30' },
   uploadText: { fontSize: 13, fontWeight: '600', color: '#1A5CFF' },
   uploadSub: { fontSize: 11, color: '#888', marginTop: 2 },
   lockedZone: { borderWidth: 1.5, borderColor: '#eee', borderStyle: 'dashed', borderRadius: 12, padding: 24, alignItems: 'center', backgroundColor: '#fafafa' },

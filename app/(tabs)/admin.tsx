@@ -13,7 +13,7 @@ const videoData = [
 
 export default function AdminScreen() {
   const { t } = useLanguage();
-  const [currentPlan, setCurrentPlan] = useState<Plan>('starter');
+  const [currentPlan, setCurrentPlan] = useState<Plan>('growth');
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [annual, setAnnual] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan>('growth');

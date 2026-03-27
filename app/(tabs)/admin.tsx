@@ -86,6 +86,16 @@ export default function AdminScreen() {
     }
   }
 
+  async function toggleStatus(videoId: string, currentStatus: string) {
+    const newStatus = currentStatus === 'live' ? 'pending' : 'live';
+    const { error } = await supabase
+      .from('videos')
+      .update({ status: newStatus })
+      .eq('id', videoId);
+    if (error) Alert.alert('Error', error.message);
+    else refetch();
+  }
+
   function resetUploadForm() {
     setShowUploadForm(false);
     setPendingVideoUri(null);
@@ -233,11 +243,13 @@ export default function AdminScreen() {
                       {emp.role} · {v.duration} · {v.views} views
                     </Text>
                   </View>
-                  <View style={[styles.statusBadge, isLive ? styles.statusLive : styles.statusPending]}>
+                  <TouchableOpacity
+                    style={[styles.statusBadge, isLive ? styles.statusLive : styles.statusPending]}
+                    onPress={() => toggleStatus(v.id, v.status)}>
                     <Text style={[styles.statusText, isLive ? styles.statusLiveText : styles.statusPendingText]}>
                       {isLive ? t('live') : t('pending')}
                     </Text>
-                  </View>
+                  </TouchableOpacity>
                 </View>
               );
             })

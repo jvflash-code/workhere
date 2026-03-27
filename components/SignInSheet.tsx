@@ -7,7 +7,7 @@ type Props = {
   onClose: () => void;
 };
 
-type Screen = 'main' | 'email';
+type Screen = 'main' | 'email' | 'signup';
 
 export default function SignInSheet({ visible, onClose }: Props) {
   const [view, setView] = useState<Screen>('main');
@@ -33,6 +33,20 @@ export default function SignInSheet({ visible, onClose }: Props) {
       setError(error.message);
     } else {
       resetAndClose();
+    }
+  }
+
+  async function handleEmailSignUp() {
+    setError(null);
+    setLoading(true);
+    const { error } = await supabase.auth.signUp({ email: email.trim(), password });
+    setLoading(false);
+    if (error) {
+      setError(error.message);
+    } else {
+      Alert.alert('Account created!', 'Check your email to confirm your account, then sign in.', [
+        { text: 'OK', onPress: () => setView('email') },
+      ]);
     }
   }
 
@@ -72,7 +86,7 @@ export default function SignInSheet({ visible, onClose }: Props) {
                 <Text style={styles.dismissText}>Maybe later</Text>
               </TouchableOpacity>
             </>
-          ) : (
+          ) : view === 'email' ? (
             <>
               <TouchableOpacity style={styles.backBtn} onPress={() => { setView('main'); setError(null); }}>
                 <Text style={styles.backText}>← Back</Text>
@@ -111,6 +125,53 @@ export default function SignInSheet({ visible, onClose }: Props) {
                   : <Text style={styles.appleBtnText}>Sign In</Text>}
               </TouchableOpacity>
 
+              <TouchableOpacity style={styles.toggleBtn} onPress={() => { setView('signup'); setError(null); }}>
+                <Text style={styles.toggleText}>No account? Create one</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.dismissBtn} onPress={resetAndClose}>
+                <Text style={styles.dismissText}>Cancel</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity style={styles.backBtn} onPress={() => { setView('email'); setError(null); }}>
+                <Text style={styles.backText}>← Back</Text>
+              </TouchableOpacity>
+
+              <Text style={styles.title}>Create Account</Text>
+              <Text style={styles.sub}>Enter your email and choose a password.</Text>
+
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                placeholderTextColor="#aaa"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Password (min 6 characters)"
+                placeholderTextColor="#aaa"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+
+              {error && <Text style={styles.errorText}>{error}</Text>}
+
+              <TouchableOpacity
+                style={[styles.appleBtn, loading && styles.btnDisabled]}
+                onPress={handleEmailSignUp}
+                disabled={loading}>
+                {loading
+                  ? <ActivityIndicator color="white" />
+                  : <Text style={styles.appleBtnText}>Create Account</Text>}
+              </TouchableOpacity>
+
               <TouchableOpacity style={styles.dismissBtn} onPress={resetAndClose}>
                 <Text style={styles.dismissText}>Cancel</Text>
               </TouchableOpacity>
@@ -143,4 +204,6 @@ const styles = StyleSheet.create({
   input: { width: '100%', backgroundColor: '#f5f5f5', borderRadius: 12, padding: 14, fontSize: 14, color: '#333', marginBottom: 12 },
   errorText: { color: '#ff3b30', fontSize: 12, marginBottom: 12, textAlign: 'center' },
   btnDisabled: { backgroundColor: '#999' },
+  toggleBtn: { marginTop: 12, marginBottom: 8 },
+  toggleText: { color: '#1A5CFF', fontSize: 13 },
 });

@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import LangToggle from '../../components/LangToggle';
@@ -64,7 +65,7 @@ export default function VideosScreen() {
 
                 <Text style={styles.quote}>{v.quote}</Text>
 
-                <TouchableOpacity style={styles.askBtn}>
+                <TouchableOpacity style={styles.askBtn} onPress={() => router.push('/(tabs)/chat')}>
                   <Text style={styles.askBtnText}>{emp.name.split(' ')[0]} — {t('askQuestion')}</Text>
                 </TouchableOpacity>
               </View>

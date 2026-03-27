@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import LangToggle from '../../components/LangToggle';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -76,7 +77,7 @@ export default function HomeScreen() {
         ))}
       </View>
 
-      <TouchableOpacity style={styles.ctaBtn}>
+      <TouchableOpacity style={styles.ctaBtn} onPress={() => router.push('/(tabs)/explore')}>
         <Text style={styles.ctaBtnText}>{t('watchVideos')}</Text>
       </TouchableOpacity>
     </ScrollView>

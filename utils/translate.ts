@@ -24,7 +24,7 @@ export async function translateText(
   const data = await response.json();
 
   if (data.responseStatus === 200 && data.responseData?.translatedText) {
-    return data.responseData.translatedText;
+    return decodeURIComponent(data.responseData.translatedText);
   }
 
   throw new Error(data.responseDetails ?? 'Translation failed');

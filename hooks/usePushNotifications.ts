@@ -42,7 +42,9 @@ async function registerForPushNotifications(userId: string, employeeId?: string)
     });
   }
 
-  const token = (await Notifications.getExpoPushTokenAsync()).data;
+  const token = (await Notifications.getExpoPushTokenAsync({
+    projectId: 'e8d15acd-9d24-4f79-8be4-977b3747da04',
+  })).data;
 
   // Save token to Supabase
   await supabase.from('push_tokens').upsert(

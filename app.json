@@ -44,6 +44,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e8d15acd-9d24-4f79-8be4-977b3747da04"
+      }
+    },
+    "owner": "jvflash"
   }
 }

@@ -14,6 +14,7 @@ import LangToggle from '../../components/LangToggle';
 import SignInSheet from '../../components/SignInSheet';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
+import { usePushNotifications } from '../../hooks/usePushNotifications';
 import { supabase } from '../../lib/supabase';
 import { detectLanguage, translateText } from '../../utils/translate';
 
@@ -48,11 +49,14 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
-  const [typing, setTyping] = useState(false);
+  const [waitingForReply, setWaitingForReply] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
+
+  // Register for push notifications
+  usePushNotifications(user?.id);
 
   // On mount (when user is logged in), set up conversation
   useEffect(() => {
@@ -153,6 +157,47 @@ export default function ChatScreen() {
     initConversation();
   }, [user]);
 
+  // Subscribe to realtime messages when conversationId is available
+  useEffect(() => {
+    if (!conversationId || !employee) return;
+
+    const employeeName = employee.name;
+
+    const channel = supabase
+      .channel(`messages:${conversationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const msg = payload.new as { id: string; role: string; content: string };
+          if (msg.role !== 'user') {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: nextLocalId(),
+                from: 'them',
+                name: employeeName,
+                text: msg.content,
+                translated: null,
+              },
+            ]);
+            setWaitingForReply(false);
+            setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [conversationId, employee]);
+
   async function sendMessage() {
     const text = input.trim();
     if (!text || sending || !conversationId) return;
@@ -169,7 +214,7 @@ export default function ChatScreen() {
     setMessages((prev) => [...prev, newMsg]);
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
 
-    // Start translation in parallel with AI call
+    // Start translation in parallel
     translateText(text, from, to)
       .then((result) => {
         const label = to === 'es' ? '🇲🇽 Traducido' : '🇺🇸 Translated';
@@ -185,45 +230,40 @@ export default function ChatScreen() {
         );
       });
 
-    // Show typing indicator
-    setTyping(true);
-    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
-
     try {
       const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
       const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
-      const res = await fetch(`${supabaseUrl}/functions/v1/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: supabaseAnonKey,
-          Authorization: `Bearer ${supabaseAnonKey}`,
-        },
-        body: JSON.stringify({
-          conversation_id: conversationId,
-          message: text,
-          company_id: COMPANY_ID,
-          employee_id: employee?.id ?? null,
-        }),
+      // Save user message to Supabase
+      await supabase.from('messages').insert({
+        conversation_id: conversationId,
+        role: 'user',
+        content: text,
       });
 
-      const data = await res.json();
-      setTyping(false);
+      // Show waiting indicator
+      setWaitingForReply(true);
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
 
-      if (data.reply) {
-        const replyMsg: Message = {
-          id: nextLocalId(),
-          from: 'them',
-          name: employee?.name ?? 'Employee',
-          text: data.reply,
-          translated: null,
-        };
-        setMessages((prev) => [...prev, replyMsg]);
-        setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+      // Notify employee via push
+      if (employee?.id) {
+        await fetch(`${supabaseUrl}/functions/v1/push`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: supabaseAnonKey,
+            Authorization: `Bearer ${supabaseAnonKey}`,
+          },
+          body: JSON.stringify({
+            employee_id: employee.id,
+            title: 'New message',
+            body: text.slice(0, 100),
+            conversation_id: conversationId,
+          }),
+        });
       }
     } catch {
-      setTyping(false);
+      setWaitingForReply(false);
       // Silently fail — user message is still visible
     } finally {
       setSending(false);
@@ -329,13 +369,14 @@ export default function ChatScreen() {
               </View>
             ))}
 
-            {/* Typing indicator */}
-            {typing && (
+            {/* Waiting for reply indicator */}
+            {waitingForReply && (
               <View style={styles.themWrapper}>
                 <Text style={styles.senderName}>{employee?.name ?? 'Employee'}</Text>
-                <View style={[styles.bubble, styles.themBubble]}>
-                  <Text style={[styles.bubbleText, styles.themText, styles.typingText]}>
-                    {employee?.name ?? 'Employee'} is typing...
+                <View style={[styles.bubble, styles.themBubble, styles.waitingBubble]}>
+                  <ActivityIndicator size="small" color="#999" style={{ marginRight: 6 }} />
+                  <Text style={[styles.bubbleText, styles.themText, styles.waitingText]}>
+                    Message sent — waiting for reply
                   </Text>
                 </View>
               </View>
@@ -394,7 +435,8 @@ const styles = StyleSheet.create({
   bubbleText: { fontSize: 13, lineHeight: 20 },
   themText: { color: '#333' },
   meText: { color: 'white' },
-  typingText: { color: '#999', fontStyle: 'italic' },
+  waitingBubble: { flexDirection: 'row', alignItems: 'center' },
+  waitingText: { color: '#999', fontStyle: 'italic', flex: 1 },
   translatingRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
   translatingText: { fontSize: 10, color: '#1D9E75' },
   translatedTag: { backgroundColor: '#E1F5EE', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginTop: 4, maxWidth: '80%' },

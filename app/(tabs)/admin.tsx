@@ -1,6 +1,6 @@
 import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
-import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import LangToggle from '../../components/LangToggle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAllVideos, useCompany, VideoItem } from '../../hooks/useCompany';
@@ -10,6 +10,22 @@ const COMPANY_ID = '00000000-0000-0000-0000-000000000001';
 
 type Plan = 'starter' | 'growth' | 'pro';
 
+type ConversationRow = {
+  id: string;
+  user_id: string | null;
+  user_email: string;
+  last_message: string;
+  last_message_at: string;
+  unread: boolean;
+};
+
+type ThreadMessage = {
+  id: string;
+  role: string;
+  content: string;
+  created_at: string;
+};
+
 export default function AdminScreen() {
   const { t } = useLanguage();
   const { company } = useCompany(COMPANY_ID);
@@ -18,6 +34,16 @@ export default function AdminScreen() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [annual, setAnnual] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan>('growth');
+
+  // Inbox state
+  const [conversations, setConversations] = useState<ConversationRow[]>([]);
+  const [inboxLoading, setInboxLoading] = useState(false);
+  const [selectedConv, setSelectedConv] = useState<ConversationRow | null>(null);
+  const [thread, setThread] = useState<ThreadMessage[]>([]);
+  const [threadLoading, setThreadLoading] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [replying, setReplying] = useState(false);
+  const threadScrollRef = useRef<ScrollView>(null);
 
   // Upload flow state
   const [showUploadForm, setShowUploadForm] = useState(false);
@@ -68,6 +94,129 @@ export default function AdminScreen() {
   const videoLimit = currentPlan === 'starter' ? 1 : currentPlan === 'growth' ? 5 : 999;
   const videosUsed = videos.filter((v: VideoItem) => v.status === 'live').length;
   const atLimit = videosUsed >= videoLimit;
+
+  // Load inbox conversations
+  useEffect(() => {
+    loadInbox();
+  }, []);
+
+  async function loadInbox() {
+    setInboxLoading(true);
+    try {
+      // Fetch conversations for this company with last message
+      const { data: convs } = await supabase
+        .from('conversations')
+        .select('id, user_id, created_at')
+        .eq('company_id', COMPANY_ID)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (!convs || convs.length === 0) {
+        setConversations([]);
+        return;
+      }
+
+      // For each conversation, get the last message
+      const rows: ConversationRow[] = await Promise.all(
+        convs.map(async (conv) => {
+          const { data: msgs } = await supabase
+            .from('messages')
+            .select('content, role, created_at')
+            .eq('conversation_id', conv.id)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          const lastMsg = msgs?.[0];
+          const emailPart = conv.user_id ? conv.user_id.slice(0, 8) : 'Anonymous';
+
+          return {
+            id: conv.id,
+            user_id: conv.user_id,
+            user_email: emailPart,
+            last_message: lastMsg?.content ?? 'No messages yet',
+            last_message_at: lastMsg?.created_at ?? conv.created_at,
+            unread: lastMsg?.role === 'user',
+          };
+        })
+      );
+
+      // Filter to conversations that have messages
+      setConversations(rows.filter((r) => r.last_message !== 'No messages yet'));
+    } catch {
+      // silently fail
+    } finally {
+      setInboxLoading(false);
+    }
+  }
+
+  async function openConversation(conv: ConversationRow) {
+    setSelectedConv(conv);
+    setThreadLoading(true);
+    setThread([]);
+
+    const { data: msgs } = await supabase
+      .from('messages')
+      .select('id, role, content, created_at')
+      .eq('conversation_id', conv.id)
+      .order('created_at', { ascending: true })
+      .limit(50);
+
+    setThread((msgs as ThreadMessage[]) ?? []);
+    setThreadLoading(false);
+    setTimeout(() => threadScrollRef.current?.scrollToEnd({ animated: false }), 200);
+  }
+
+  async function sendReply() {
+    if (!replyText.trim() || !selectedConv || replying) return;
+
+    const text = replyText.trim();
+    setReplyText('');
+    setReplying(true);
+
+    try {
+      const { data: inserted, error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: selectedConv.id,
+          role: 'employee',
+          content: text,
+        })
+        .select('id, role, content, created_at')
+        .single();
+
+      if (error) throw error;
+
+      if (inserted) {
+        setThread((prev) => [...prev, inserted as ThreadMessage]);
+        setTimeout(() => threadScrollRef.current?.scrollToEnd({ animated: true }), 100);
+      }
+
+      // Refresh inbox to update last message
+      loadInbox();
+    } catch (err: any) {
+      Alert.alert('Error', err.message ?? 'Failed to send reply.');
+      setReplyText(text);
+    } finally {
+      setReplying(false);
+    }
+  }
+
+  function getInitials(emailOrId: string) {
+    return emailOrId.slice(0, 2).toUpperCase();
+  }
+
+  function formatTime(iso: string) {
+    const d = new Date(iso);
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'now';
+    if (diffMins < 60) return `${diffMins}m`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h`;
+    return `${Math.floor(diffHours / 24)}d`;
+  }
 
   async function handleUpload() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -182,6 +331,40 @@ export default function AdminScreen() {
           </View>
         </View>
 
+        {/* Inbox Section */}
+        <View style={styles.inboxSection}>
+          <View style={styles.inboxHeader}>
+            <Text style={styles.inboxTitle}>Inbox</Text>
+            <TouchableOpacity onPress={loadInbox} style={styles.refreshBtn}>
+              <Text style={styles.refreshText}>Refresh</Text>
+            </TouchableOpacity>
+          </View>
+
+          {inboxLoading ? (
+            <ActivityIndicator color="#1A5CFF" size="small" style={{ marginVertical: 12 }} />
+          ) : conversations.length === 0 ? (
+            <View style={styles.emptyInbox}>
+              <Text style={styles.emptyInboxText}>No messages yet. User messages will appear here.</Text>
+            </View>
+          ) : (
+            conversations.map((conv) => (
+              <TouchableOpacity key={conv.id} style={styles.convRow} onPress={() => openConversation(conv)}>
+                <View style={[styles.convAvatar, { backgroundColor: conv.unread ? '#1A5CFF' : '#888' }]}>
+                  <Text style={styles.convAvatarText}>{getInitials(conv.user_email)}</Text>
+                </View>
+                <View style={styles.convInfo}>
+                  <Text style={styles.convEmail} numberOfLines={1}>User {conv.user_id?.slice(0, 8) ?? 'Anonymous'}</Text>
+                  <Text style={styles.convPreview} numberOfLines={1}>{conv.last_message}</Text>
+                </View>
+                <View style={styles.convMeta}>
+                  <Text style={styles.convTime}>{formatTime(conv.last_message_at)}</Text>
+                  {conv.unread && <View style={styles.unreadDot} />}
+                </View>
+              </TouchableOpacity>
+            ))
+          )}
+        </View>
+
         <View style={styles.metricsRow}>
           <View style={styles.metric}>
             <Text style={styles.metricVal}>1,204</Text>
@@ -192,7 +375,7 @@ export default function AdminScreen() {
             <Text style={styles.metricLbl}>{t('videosLive')}</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricVal}>47</Text>
+            <Text style={styles.metricVal}>{conversations.length}</Text>
             <Text style={styles.metricLbl}>{t('chatsThisWeek')}</Text>
           </View>
         </View>
@@ -275,6 +458,75 @@ export default function AdminScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* Reply Modal */}
+      <Modal visible={selectedConv !== null} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <KeyboardAvoidingView
+            style={styles.replyModal}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <View style={styles.modalHandle} />
+            <View style={styles.replyHeader}>
+              <Text style={styles.replyTitle}>
+                User {selectedConv?.user_id?.slice(0, 8) ?? 'Anonymous'}
+              </Text>
+              <TouchableOpacity onPress={() => setSelectedConv(null)}>
+                <Text style={styles.closeBtn}>Close</Text>
+              </TouchableOpacity>
+            </View>
+
+            {threadLoading ? (
+              <View style={styles.threadLoading}>
+                <ActivityIndicator color="#1A5CFF" />
+              </View>
+            ) : (
+              <ScrollView
+                ref={threadScrollRef}
+                style={styles.threadArea}
+                contentContainerStyle={styles.threadContent}>
+                {thread.map((msg) => {
+                  const isUser = msg.role === 'user';
+                  return (
+                    <View key={msg.id} style={isUser ? styles.themWrapper : styles.meWrapper}>
+                      {isUser && <Text style={styles.senderName}>User</Text>}
+                      <View style={[styles.bubble, isUser ? styles.themBubble : styles.meBubble]}>
+                        <Text style={[styles.bubbleText, isUser ? styles.themText : styles.meText]}>
+                          {msg.content}
+                        </Text>
+                      </View>
+                      <Text style={styles.msgTime}>{formatTime(msg.created_at)}</Text>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            )}
+
+            <View style={styles.replyBar}>
+              <TextInput
+                style={styles.replyInput}
+                value={replyText}
+                onChangeText={setReplyText}
+                placeholder="Type a reply..."
+                placeholderTextColor="#aaa"
+                onSubmitEditing={sendReply}
+                returnKeyType="send"
+                editable={!replying}
+                multiline
+              />
+              <TouchableOpacity
+                style={[styles.sendBtn, replying && styles.sendBtnDisabled]}
+                onPress={sendReply}
+                disabled={replying}>
+                {replying ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Text style={styles.sendIcon}>▶</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
 
       {/* Upload form modal */}
       <Modal visible={showUploadForm} animationType="slide" transparent>
@@ -412,6 +664,47 @@ const styles = StyleSheet.create({
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   label: { fontSize: 11, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: 0.8 },
   title: { fontSize: 20, fontWeight: '700', color: 'white', marginTop: 4 },
+  // Inbox styles
+  inboxSection: { backgroundColor: 'white', marginBottom: 0, borderBottomWidth: 0.5, borderBottomColor: '#eee' },
+  inboxHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, paddingBottom: 8 },
+  inboxTitle: { fontSize: 15, fontWeight: '700', color: '#333' },
+  refreshBtn: { paddingHorizontal: 10, paddingVertical: 4 },
+  refreshText: { fontSize: 12, color: '#1A5CFF', fontWeight: '600' },
+  emptyInbox: { padding: 16, paddingTop: 8, paddingBottom: 20 },
+  emptyInboxText: { fontSize: 13, color: '#aaa', textAlign: 'center' },
+  convRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: 0.5, borderTopColor: '#f0f0f0', gap: 12 },
+  convAvatar: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  convAvatarText: { color: 'white', fontWeight: '700', fontSize: 13 },
+  convInfo: { flex: 1, minWidth: 0 },
+  convEmail: { fontSize: 13, fontWeight: '600', color: '#333' },
+  convPreview: { fontSize: 12, color: '#888', marginTop: 2 },
+  convMeta: { alignItems: 'flex-end', gap: 4 },
+  convTime: { fontSize: 11, color: '#aaa' },
+  unreadDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#1A5CFF' },
+  // Reply modal
+  replyModal: { backgroundColor: 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, height: '85%', flexDirection: 'column' },
+  replyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 12 },
+  replyTitle: { fontSize: 16, fontWeight: '700', color: '#333' },
+  closeBtn: { fontSize: 14, color: '#1A5CFF', fontWeight: '600' },
+  threadLoading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  threadArea: { flex: 1 },
+  threadContent: { padding: 16, gap: 8 },
+  replyBar: { flexDirection: 'row', padding: 12, gap: 8, borderTopWidth: 0.5, borderTopColor: '#eee', backgroundColor: 'white' },
+  replyInput: { flex: 1, backgroundColor: '#f5f5f5', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, fontSize: 13, color: '#333', maxHeight: 80 },
+  msgTime: { fontSize: 10, color: '#ccc', marginTop: 2 },
+  // Shared chat bubble styles (duplicated for use in reply modal)
+  themWrapper: { alignItems: 'flex-start', marginBottom: 8 },
+  meWrapper: { alignItems: 'flex-end', marginBottom: 8 },
+  senderName: { fontSize: 11, color: '#888', marginBottom: 3 },
+  bubble: { maxWidth: '80%', padding: 10, borderRadius: 14 },
+  themBubble: { backgroundColor: '#f0f0f0', borderBottomLeftRadius: 4 },
+  meBubble: { backgroundColor: '#1A5CFF', borderBottomRightRadius: 4 },
+  bubbleText: { fontSize: 13, lineHeight: 20 },
+  themText: { color: '#333' },
+  meText: { color: 'white' },
+  sendBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#1A5CFF', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-end' },
+  sendBtnDisabled: { backgroundColor: '#7BA7FF' },
+  sendIcon: { color: 'white', fontSize: 12, marginLeft: 2 },
   metricsRow: { flexDirection: 'row', backgroundColor: 'white', borderBottomWidth: 0.5, borderBottomColor: '#eee' },
   metric: { flex: 1, padding: 14, alignItems: 'center', borderRightWidth: 0.5, borderRightColor: '#eee' },
   metricVal: { fontSize: 20, fontWeight: '700', color: '#1A5CFF' },
@@ -474,7 +767,7 @@ const styles = StyleSheet.create({
   featureRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
   featureCheck: { fontSize: 12, fontWeight: '700' },
   featureText: { fontSize: 12, color: '#555' },
-  ctaBtn: { padding: 16, borderRadius: 14, alignItems: 'center', marginTop: 8 },
+  ctaBtn: { padding: 16, borderRadius: 14, alignItems: 'center', marginTop: 8, backgroundColor: '#1A5CFF' },
   ctaBtnDisabled: { backgroundColor: '#ccc' },
   ctaBtnText: { color: 'white', fontSize: 15, fontWeight: '700' },
   dismissBtn: { alignItems: 'center', marginTop: 14 },

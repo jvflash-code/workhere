@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import LangToggle from '../../components/LangToggle';
 import { useActiveCompany } from '../../contexts/CompanyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -32,11 +32,15 @@ export default function HomeScreen() {
           <ActivityIndicator color="white" size="large" style={styles.loader} />
         ) : (
           <>
-            <View style={styles.companyLogo}>
-              <Text style={styles.companyLogoText}>
-                {company?.name ? company.name.charAt(0) : 'A'}
-              </Text>
-            </View>
+            {company?.logo_url ? (
+              <Image source={{ uri: company.logo_url }} style={styles.companyLogoImg} />
+            ) : (
+              <View style={styles.companyLogo}>
+                <Text style={styles.companyLogoText}>
+                  {company?.name ? company.name.charAt(0) : 'A'}
+                </Text>
+              </View>
+            )}
             <Text style={styles.companyName}>{company?.name ?? '—'}</Text>
             <Text style={styles.companyTagline}>{company?.tagline ?? ''}</Text>
             <View style={styles.statsRow}>
@@ -77,6 +81,15 @@ export default function HomeScreen() {
         ))}
       </View>
 
+      {company?.about && (
+        <>
+          <Text style={styles.sectionLabel}>About</Text>
+          <View style={styles.aboutCard}>
+            <Text style={styles.aboutText}>{company.about}</Text>
+          </View>
+        </>
+      )}
+
       <TouchableOpacity style={styles.ctaBtn} onPress={() => router.push('/(tabs)/explore')}>
         <Text style={styles.ctaBtnText}>{t('watchVideos')}</Text>
       </TouchableOpacity>
@@ -98,6 +111,7 @@ const styles = StyleSheet.create({
   companyCard: { backgroundColor: '#1A5CFF', padding: 20, paddingTop: 0, paddingBottom: 24 },
   loader: { paddingVertical: 32 },
   companyLogo: { width: 56, height: 56, borderRadius: 12, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  companyLogoImg: { width: 56, height: 56, borderRadius: 12, marginBottom: 10, backgroundColor: 'white' },
   companyLogoText: { fontSize: 24, fontWeight: '700', color: '#1A5CFF' },
   companyName: { fontSize: 22, fontWeight: '700', color: 'white', marginBottom: 2 },
   companyTagline: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginBottom: 16 },
@@ -112,6 +126,8 @@ const styles = StyleSheet.create({
   perkIcon: { fontSize: 20, marginBottom: 4 },
   perkTitle: { fontSize: 12, fontWeight: '600', color: '#333' },
   perkDesc: { fontSize: 11, color: '#888', marginTop: 2 },
+  aboutCard: { backgroundColor: 'white', borderRadius: 12, padding: 16, marginHorizontal: 16, marginBottom: 8 },
+  aboutText: { fontSize: 14, color: '#444', lineHeight: 22 },
   ctaBtn: { backgroundColor: '#1A5CFF', margin: 16, padding: 16, borderRadius: 12, alignItems: 'center' },
   ctaBtnText: { color: 'white', fontSize: 15, fontWeight: '600' },
   switchBtn: { alignItems: 'center', marginBottom: 32, paddingVertical: 12 },

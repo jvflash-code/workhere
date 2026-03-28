@@ -6,6 +6,7 @@ export type Company = {
   name: string;
   tagline: string;
   logo_url: string | null;
+  about: string | null;
   employee_count: number;
   rating: number;
   recommend_pct: number;

@@ -1,6 +1,6 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import EmployerOnboarding from '../../components/EmployerOnboarding';
 import LangToggle from '../../components/LangToggle';
 import SignInSheet from '../../components/SignInSheet';
@@ -56,6 +56,11 @@ export default function AdminScreen() {
   const [replying, setReplying] = useState(false);
   const threadScrollRef = useRef<ScrollView>(null);
 
+  // Company settings state
+  const [aboutText, setAboutText] = useState('');
+  const [savingAbout, setSavingAbout] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
+
   // Upload flow state
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -104,6 +109,11 @@ export default function AdminScreen() {
   const activePlan = plans.find((p) => p.id === currentPlan)!;
   const videosUsed = videos.filter((v: VideoItem) => v.status === 'live').length;
   const atLimit = videosUsed >= videoLimit;
+
+  // Pre-fill about text when company loads
+  useEffect(() => {
+    if (company?.about) setAboutText(company.about);
+  }, [company]);
 
   // Load subscription plan from DB
   useEffect(() => {
@@ -273,6 +283,55 @@ export default function AdminScreen() {
     if (!result.canceled) {
       setPendingVideoUri(result.assets[0].uri);
       setShowUploadForm(true);
+    }
+  }
+
+  async function saveAbout() {
+    setSavingAbout(true);
+    const { error } = await supabase
+      .from('companies')
+      .update({ about: aboutText.trim() })
+      .eq('id', effectiveCompanyId!);
+    setSavingAbout(false);
+    if (error) Alert.alert('Error', error.message);
+  }
+
+  async function handleLogoUpload() {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Please allow access to your photo library.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (result.canceled || !result.assets?.[0]) return;
+
+    setLogoUploading(true);
+    try {
+      const uri = result.assets[0].uri;
+      const ext = uri.split('.').pop() ?? 'jpg';
+      const fileName = `logos/${effectiveCompanyId!}.${ext}`;
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      const { error: uploadError } = await supabase.storage
+        .from('videos')
+        .upload(fileName, blob, { contentType: `image/${ext}`, upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from('videos').getPublicUrl(fileName);
+      const { error: updateError } = await supabase
+        .from('companies')
+        .update({ logo_url: urlData.publicUrl })
+        .eq('id', effectiveCompanyId!);
+      if (updateError) throw updateError;
+      Alert.alert('Logo updated!', 'Your company logo has been saved.');
+    } catch (err: any) {
+      Alert.alert('Upload failed', err.message ?? 'Something went wrong.');
+    } finally {
+      setLogoUploading(false);
     }
   }
 
@@ -582,6 +641,45 @@ export default function AdminScreen() {
           )}
         </View>
 
+        {/* Company Settings */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Company Settings</Text>
+
+          {/* Logo */}
+          <TouchableOpacity style={styles.logoRow} onPress={handleLogoUpload} disabled={logoUploading}>
+            {company?.logo_url ? (
+              <Image source={{ uri: company.logo_url }} style={styles.logoPreview} />
+            ) : (
+              <View style={styles.logoPlaceholder}>
+                <Text style={styles.logoPlaceholderText}>{company?.name?.charAt(0) ?? 'C'}</Text>
+              </View>
+            )}
+            <View style={styles.logoRowInfo}>
+              <Text style={styles.logoRowTitle}>Company Logo</Text>
+              <Text style={styles.logoRowSub}>{logoUploading ? 'Uploading...' : 'Tap to change'}</Text>
+            </View>
+            {logoUploading && <ActivityIndicator size="small" color="#1A5CFF" />}
+          </TouchableOpacity>
+
+          {/* About */}
+          <Text style={styles.settingsLabel}>About your company</Text>
+          <TextInput
+            style={[styles.formInput, styles.formInputMulti]}
+            placeholder="Tell job seekers what makes your company a great place to work..."
+            placeholderTextColor="#aaa"
+            value={aboutText}
+            onChangeText={setAboutText}
+            multiline
+            numberOfLines={4}
+          />
+          <TouchableOpacity
+            style={[styles.saveBtn, savingAbout && styles.saveBtnDisabled]}
+            onPress={saveAbout}
+            disabled={savingAbout}>
+            <Text style={styles.saveBtnText}>{savingAbout ? 'Saving...' : 'Save'}</Text>
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>{t('subscription')}</Text>
           <View style={styles.subCard}>
@@ -809,6 +907,17 @@ const styles = StyleSheet.create({
   gateBtnText: { color: 'white', fontSize: 15, fontWeight: '700' },
   gateSecondaryBtn: { marginTop: 16 },
   gateSecondaryBtnText: { color: '#1A5CFF', fontSize: 13, fontWeight: '600' },
+  logoRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 12, padding: 14, marginBottom: 16, gap: 14 },
+  logoPreview: { width: 52, height: 52, borderRadius: 10 },
+  logoPlaceholder: { width: 52, height: 52, borderRadius: 10, backgroundColor: '#EEF3FF', alignItems: 'center', justifyContent: 'center' },
+  logoPlaceholderText: { fontSize: 22, fontWeight: '700', color: '#1A5CFF' },
+  logoRowInfo: { flex: 1 },
+  logoRowTitle: { fontSize: 14, fontWeight: '600', color: '#333' },
+  logoRowSub: { fontSize: 12, color: '#888', marginTop: 2 },
+  settingsLabel: { fontSize: 12, fontWeight: '600', color: '#888', marginBottom: 6, textTransform: 'uppercase' },
+  saveBtn: { backgroundColor: '#1A5CFF', borderRadius: 10, padding: 12, alignItems: 'center', marginTop: 4 },
+  saveBtnDisabled: { backgroundColor: '#7BA7FF' },
+  saveBtnText: { color: 'white', fontSize: 14, fontWeight: '600' },
   root: { flex: 1 },
   container: { flex: 1, backgroundColor: '#f5f5f5' },
   header: { backgroundColor: '#1A5CFF', padding: 24, paddingTop: 60 },

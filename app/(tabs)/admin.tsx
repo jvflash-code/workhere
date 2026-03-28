@@ -2,11 +2,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import LangToggle from '../../components/LangToggle';
+import { useActiveCompany } from '../../contexts/CompanyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAllVideos, useCompany, VideoItem } from '../../hooks/useCompany';
 import { supabase } from '../../lib/supabase';
-
-const COMPANY_ID = '00000000-0000-0000-0000-000000000001';
 
 type Plan = 'starter' | 'growth' | 'pro';
 
@@ -27,9 +26,10 @@ type ThreadMessage = {
 };
 
 export default function AdminScreen() {
+  const { companyId } = useActiveCompany();
   const { t } = useLanguage();
-  const { company } = useCompany(COMPANY_ID);
-  const { videos, loading: videosLoading, refetch } = useAllVideos(COMPANY_ID);
+  const { company } = useCompany(companyId!);
+  const { videos, loading: videosLoading, refetch } = useAllVideos(companyId!);
   const [currentPlan, setCurrentPlan] = useState<Plan>('growth');
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [annual, setAnnual] = useState(false);
@@ -107,7 +107,7 @@ export default function AdminScreen() {
       const { data: convs } = await supabase
         .from('conversations')
         .select('id, user_id, created_at')
-        .eq('company_id', COMPANY_ID)
+        .eq('company_id', companyId!)
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(20);
@@ -272,7 +272,7 @@ export default function AdminScreen() {
 
       const { data: emp, error: empError } = await supabase
         .from('employees')
-        .insert({ company_id: COMPANY_ID, name: empName.trim(), role: empRole.trim(), initials, color, years_at_company: empYears.trim() || '1 year' })
+        .insert({ company_id: companyId!, name: empName.trim(), role: empRole.trim(), initials, color, years_at_company: empYears.trim() || '1 year' })
         .select()
         .single();
 
@@ -281,7 +281,7 @@ export default function AdminScreen() {
       // 2. Upload video to Storage
       setUploadProgress('Uploading video...');
       const ext = pendingVideoUri.split('.').pop() ?? 'mp4';
-      const fileName = `${COMPANY_ID}/${emp.id}-${Date.now()}.${ext}`;
+      const fileName = `${companyId!}/${emp.id}-${Date.now()}.${ext}`;
 
       const response = await fetch(pendingVideoUri);
       const blob = await response.blob();
@@ -299,7 +299,7 @@ export default function AdminScreen() {
       setUploadProgress('Saving video record...');
       const { error: videoError } = await supabase
         .from('videos')
-        .insert({ company_id: COMPANY_ID, employee_id: emp.id, video_url: publicUrl, duration: '0:00', quote: videoQuote.trim() || '', status: 'pending', views: 0 });
+        .insert({ company_id: companyId!, employee_id: emp.id, video_url: publicUrl, duration: '0:00', quote: videoQuote.trim() || '', status: 'pending', views: 0 });
 
       if (videoError) throw videoError;
 

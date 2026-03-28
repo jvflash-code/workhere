@@ -1,14 +1,14 @@
 import { router } from 'expo-router';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import LangToggle from '../../components/LangToggle';
+import { useActiveCompany } from '../../contexts/CompanyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCompany } from '../../hooks/useCompany';
 
-const COMPANY_ID = '00000000-0000-0000-0000-000000000001';
-
 export default function HomeScreen() {
+  const { companyId, clearCompany } = useActiveCompany();
   const { t } = useLanguage();
-  const { company, loading } = useCompany(COMPANY_ID);
+  const { company, loading } = useCompany(companyId!);
 
   const perks = [
     { icon: '🏥', title: t('perk1Title'), desc: t('perk1Desc') },
@@ -80,6 +80,10 @@ export default function HomeScreen() {
       <TouchableOpacity style={styles.ctaBtn} onPress={() => router.push('/(tabs)/explore')}>
         <Text style={styles.ctaBtnText}>{t('watchVideos')}</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={styles.switchBtn} onPress={clearCompany}>
+        <Text style={styles.switchBtnText}>Switch Company</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -110,4 +114,6 @@ const styles = StyleSheet.create({
   perkDesc: { fontSize: 11, color: '#888', marginTop: 2 },
   ctaBtn: { backgroundColor: '#1A5CFF', margin: 16, padding: 16, borderRadius: 12, alignItems: 'center' },
   ctaBtnText: { color: 'white', fontSize: 15, fontWeight: '600' },
+  switchBtn: { alignItems: 'center', marginBottom: 32, paddingVertical: 12 },
+  switchBtnText: { color: '#888', fontSize: 13, textDecorationLine: 'underline' },
 });

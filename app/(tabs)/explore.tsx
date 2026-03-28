@@ -3,10 +3,9 @@ import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import LangToggle from '../../components/LangToggle';
 import VideoPlayer from '../../components/VideoPlayer';
+import { useActiveCompany } from '../../contexts/CompanyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useVideos, VideoItem } from '../../hooks/useCompany';
-
-const COMPANY_ID = '00000000-0000-0000-0000-000000000001';
 
 type ActiveVideo = {
   initials: string;
@@ -17,8 +16,9 @@ type ActiveVideo = {
 };
 
 export default function VideosScreen() {
+  const { companyId } = useActiveCompany();
   const { t } = useLanguage();
-  const { videos, loading } = useVideos(COMPANY_ID);
+  const { videos, loading } = useVideos(companyId!);
   const [activeVideo, setActiveVideo] = useState<ActiveVideo | null>(null);
 
   return (

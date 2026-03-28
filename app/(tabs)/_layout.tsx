@@ -1,7 +1,15 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import CompanyDirectory from '../../components/CompanyDirectory';
+import { useActiveCompany } from '../../contexts/CompanyContext';
 
 export default function TabLayout() {
+  const { companyId } = useActiveCompany();
+
+  if (!companyId) {
+    return <CompanyDirectory />;
+  }
+
   return (
     <Tabs
       screenOptions={{

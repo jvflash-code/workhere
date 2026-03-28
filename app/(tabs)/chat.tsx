@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import LangToggle from '../../components/LangToggle';
 import SignInSheet from '../../components/SignInSheet';
+import { useActiveCompany } from '../../contexts/CompanyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
@@ -34,15 +35,13 @@ type Employee = {
   years_at_company: string;
 };
 
-// Fixed company ID for the sample company
-const COMPANY_ID = '00000000-0000-0000-0000-000000000001';
-
 let localIdCounter = 1;
 function nextLocalId() {
   return localIdCounter++;
 }
 
 export default function ChatScreen() {
+  const { companyId } = useActiveCompany();
   const { t } = useLanguage();
   const { user } = useAuth();
   const [showSignIn, setShowSignIn] = useState(false);
@@ -69,7 +68,7 @@ export default function ChatScreen() {
         const { data: emp } = await supabase
           .from('employees')
           .select('id, name, role, years_at_company')
-          .eq('company_id', COMPANY_ID)
+          .eq('company_id', companyId!)
           .limit(1)
           .single();
 
@@ -81,7 +80,7 @@ export default function ChatScreen() {
         const { data: existing } = await supabase
           .from('conversations')
           .select('id')
-          .eq('company_id', COMPANY_ID)
+          .eq('company_id', companyId!)
           .eq('user_id', user!.id)
           .eq('status', 'active')
           .order('created_at', { ascending: false })
@@ -97,7 +96,7 @@ export default function ChatScreen() {
           const { data: newConv, error } = await supabase
             .from('conversations')
             .insert({
-              company_id: COMPANY_ID,
+              company_id: companyId!,
               user_id: user!.id,
               employee_id: emp?.id ?? null,
               status: 'active',

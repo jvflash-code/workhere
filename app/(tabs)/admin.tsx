@@ -254,11 +254,10 @@ export default function AdminScreen() {
     }
   }
 
-  async function toggleStatus(videoId: string, currentStatus: string) {
-    const newStatus = currentStatus === 'live' ? 'pending' : 'live';
+  async function setVideoStatus(videoId: string, status: 'live' | 'pending' | 'rejected') {
     const { error } = await supabase
       .from('videos')
-      .update({ status: newStatus })
+      .update({ status })
       .eq('id', videoId);
     if (error) Alert.alert('Error', error.message);
     else refetch();
@@ -488,14 +487,12 @@ export default function AdminScreen() {
           )}
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>{t('activeTestimonials')}</Text>
-          {videosLoading ? (
-            <ActivityIndicator color="#1A5CFF" size="small" style={{ marginVertical: 12 }} />
-          ) : (
-            videos.map((v: VideoItem) => {
+        {/* Pending Review */}
+        {!videosLoading && videos.filter((v: VideoItem) => v.status === 'pending').length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Pending Review</Text>
+            {videos.filter((v: VideoItem) => v.status === 'pending').map((v: VideoItem) => {
               const emp = v.employees;
-              const isLive = v.status === 'live';
               return (
                 <View key={v.id} style={styles.videoRow}>
                   <View style={[styles.avatar, { backgroundColor: emp.color }]}>
@@ -503,16 +500,49 @@ export default function AdminScreen() {
                   </View>
                   <View style={styles.videoInfo}>
                     <Text style={styles.videoName}>{emp.name}</Text>
-                    <Text style={styles.videoMeta}>
-                      {emp.role} · {v.duration} · {v.views} views
-                    </Text>
+                    <Text style={styles.videoMeta}>{emp.role} · {v.duration}</Text>
+                  </View>
+                  <View style={styles.moderationBtns}>
+                    <TouchableOpacity
+                      style={styles.approveBtn}
+                      onPress={() => setVideoStatus(v.id, 'live')}>
+                      <Text style={styles.approveBtnText}>✓</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.rejectBtn}
+                      onPress={() => setVideoStatus(v.id, 'rejected')}>
+                      <Text style={styles.rejectBtnText}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        )}
+
+        {/* Live Testimonials */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>{t('activeTestimonials')}</Text>
+          {videosLoading ? (
+            <ActivityIndicator color="#1A5CFF" size="small" style={{ marginVertical: 12 }} />
+          ) : videos.filter((v: VideoItem) => v.status === 'live').length === 0 ? (
+            <Text style={styles.emptyInboxText}>No live videos yet. Approve a pending video above.</Text>
+          ) : (
+            videos.filter((v: VideoItem) => v.status === 'live').map((v: VideoItem) => {
+              const emp = v.employees;
+              return (
+                <View key={v.id} style={styles.videoRow}>
+                  <View style={[styles.avatar, { backgroundColor: emp.color }]}>
+                    <Text style={styles.avatarText}>{emp.initials}</Text>
+                  </View>
+                  <View style={styles.videoInfo}>
+                    <Text style={styles.videoName}>{emp.name}</Text>
+                    <Text style={styles.videoMeta}>{emp.role} · {v.duration} · {v.views} views</Text>
                   </View>
                   <TouchableOpacity
-                    style={[styles.statusBadge, isLive ? styles.statusLive : styles.statusPending]}
-                    onPress={() => toggleStatus(v.id, v.status)}>
-                    <Text style={[styles.statusText, isLive ? styles.statusLiveText : styles.statusPendingText]}>
-                      {isLive ? t('live') : t('pending')}
-                    </Text>
+                    style={[styles.statusBadge, styles.statusLive]}
+                    onPress={() => setVideoStatus(v.id, 'pending')}>
+                    <Text style={[styles.statusText, styles.statusLiveText]}>{t('live')}</Text>
                   </TouchableOpacity>
                 </View>
               );
@@ -823,6 +853,11 @@ const styles = StyleSheet.create({
   statusText: { fontSize: 11, fontWeight: '600' },
   statusLiveText: { color: '#1D9E75' },
   statusPendingText: { color: '#BA7517' },
+  moderationBtns: { flexDirection: 'row', gap: 8 },
+  approveBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#E1F5EE', alignItems: 'center', justifyContent: 'center' },
+  approveBtnText: { color: '#1D9E75', fontSize: 14, fontWeight: '700' },
+  rejectBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#FDECEA', alignItems: 'center', justifyContent: 'center' },
+  rejectBtnText: { color: '#E8472A', fontSize: 14, fontWeight: '700' },
   subCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'white', borderRadius: 12, padding: 14, marginBottom: 16 },
   subPlan: { fontSize: 14, fontWeight: '600', color: '#333' },
   subDetail: { fontSize: 11, color: '#888', marginTop: 2 },

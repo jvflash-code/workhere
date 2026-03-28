@@ -40,10 +40,11 @@ export default function AdminScreen() {
 
   const { company } = useCompany(effectiveCompanyId!);
   const { videos, loading: videosLoading, refetch } = useAllVideos(effectiveCompanyId!);
-  const [currentPlan, setCurrentPlan] = useState<Plan>('growth');
+  const [currentPlan, setCurrentPlan] = useState<Plan>('starter');
+  const [videoLimit, setVideoLimit] = useState(1);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [annual, setAnnual] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<Plan>('growth');
+  const [selectedPlan, setSelectedPlan] = useState<Plan>('starter');
 
   // Inbox state
   const [conversations, setConversations] = useState<ConversationRow[]>([]);
@@ -101,9 +102,30 @@ export default function AdminScreen() {
   ];
 
   const activePlan = plans.find((p) => p.id === currentPlan)!;
-  const videoLimit = currentPlan === 'starter' ? 1 : currentPlan === 'growth' ? 5 : 999;
   const videosUsed = videos.filter((v: VideoItem) => v.status === 'live').length;
   const atLimit = videosUsed >= videoLimit;
+
+  // Load subscription plan from DB
+  useEffect(() => {
+    if (!effectiveCompanyId) return;
+    async function loadSubscription() {
+      const { data } = await supabase
+        .from('company_subscriptions')
+        .select('plan_id, plans(video_limit)')
+        .eq('company_id', effectiveCompanyId!)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      if (data) {
+        const planId = data.plan_id as Plan;
+        const limit = (data.plans as any)?.video_limit ?? 1;
+        setCurrentPlan(planId);
+        setSelectedPlan(planId);
+        setVideoLimit(limit);
+      }
+    }
+    loadSubscription();
+  }, [effectiveCompanyId]);
 
   // Load inbox conversations
   useEffect(() => {
@@ -331,8 +353,18 @@ export default function AdminScreen() {
     }
   }
 
-  function confirmUpgrade() {
+  async function confirmUpgrade() {
+    const newLimit = selectedPlan === 'starter' ? 1 : selectedPlan === 'growth' ? 5 : 999;
+    const { error } = await supabase
+      .from('company_subscriptions')
+      .update({ plan_id: selectedPlan })
+      .eq('company_id', effectiveCompanyId!);
+    if (error) {
+      Alert.alert('Error', error.message);
+      return;
+    }
     setCurrentPlan(selectedPlan);
+    setVideoLimit(newLimit);
     setShowUpgrade(false);
   }
 

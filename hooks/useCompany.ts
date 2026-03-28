@@ -73,6 +73,39 @@ export function useVideos(companyId: string) {
   return { videos, loading, error };
 }
 
+export type CompanyPerk = {
+  id: string;
+  company_id: string;
+  icon: string;
+  title: string;
+  description: string;
+  sort_order: number;
+};
+
+export function useCompanyPerks(companyId: string | null) {
+  const [perks, setPerks] = useState<CompanyPerk[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    if (!companyId) { setPerks([]); setLoading(false); return; }
+    setLoading(true);
+    supabase
+      .from('company_perks')
+      .select('*')
+      .eq('company_id', companyId)
+      .order('sort_order', { ascending: true })
+      .then(({ data }) => {
+        setPerks(data ?? []);
+        setLoading(false);
+      });
+  }, [companyId, tick]);
+
+  function refetch() { setTick((t) => t + 1); }
+
+  return { perks, loading, refetch };
+}
+
 export function useAllVideos(companyId: string) {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);

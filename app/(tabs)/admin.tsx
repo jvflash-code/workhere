@@ -7,7 +7,8 @@ import SignInSheet from '../../components/SignInSheet';
 import { useActiveCompany } from '../../contexts/CompanyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
-import { useAllVideos, useCompany, VideoItem } from '../../hooks/useCompany';
+import { useAllVideos, useCompany, useCompanyPerks, CompanyPerk, VideoItem } from '../../hooks/useCompany';
+import { PERK_TEMPLATES } from '../../constants/perkTemplates';
 import { supabase } from '../../lib/supabase';
 
 type Plan = 'starter' | 'growth' | 'pro';
@@ -70,6 +71,15 @@ export default function AdminScreen() {
   const [empRole, setEmpRole] = useState('');
   const [empYears, setEmpYears] = useState('');
   const [videoQuote, setVideoQuote] = useState('');
+
+  // Perks state
+  const { perks, loading: perksLoading, refetch: refetchPerks } = useCompanyPerks(effectiveCompanyId);
+  const [showPerksManager, setShowPerksManager] = useState(false);
+  const [editingPerk, setEditingPerk] = useState<CompanyPerk | null>(null);
+  const [perkIcon, setPerkIcon] = useState('');
+  const [perkTitle, setPerkTitle] = useState('');
+  const [perkDesc, setPerkDesc] = useState('');
+  const [savingPerk, setSavingPerk] = useState(false);
 
   const AVATAR_COLORS = ['#1A5CFF', '#6C3DE8', '#1D9E75', '#E8472A', '#F59E0B', '#0EA5E9'];
 
@@ -353,6 +363,57 @@ export default function AdminScreen() {
     );
   }
 
+
+  async function addPerkFromTemplate(icon: string, title: string, description: string) {
+    const { error } = await supabase.from('company_perks').insert({
+      company_id: effectiveCompanyId!,
+      icon, title, description,
+      sort_order: perks.length,
+    });
+    if (error) Alert.alert('Error', error.message);
+    else refetchPerks();
+  }
+
+  function openEditPerk(perk: CompanyPerk) {
+    setEditingPerk(perk);
+    setPerkIcon(perk.icon);
+    setPerkTitle(perk.title);
+    setPerkDesc(perk.description);
+  }
+
+  function openAddCustomPerk() {
+    setEditingPerk({ id: '', company_id: effectiveCompanyId!, icon: '✨', title: '', description: '', sort_order: perks.length });
+    setPerkIcon('✨');
+    setPerkTitle('');
+    setPerkDesc('');
+  }
+
+  async function savePerk() {
+    if (!perkTitle.trim()) { Alert.alert('Required', 'Please enter a title.'); return; }
+    setSavingPerk(true);
+    const payload = { icon: perkIcon.trim() || '✨', title: perkTitle.trim(), description: perkDesc.trim() };
+    if (!editingPerk?.id) {
+      const { error } = await supabase.from('company_perks').insert({ ...payload, company_id: effectiveCompanyId!, sort_order: perks.length });
+      if (error) Alert.alert('Error', error.message);
+    } else {
+      const { error } = await supabase.from('company_perks').update(payload).eq('id', editingPerk.id);
+      if (error) Alert.alert('Error', error.message);
+    }
+    setSavingPerk(false);
+    setEditingPerk(null);
+    refetchPerks();
+  }
+
+  async function deletePerk(perkId: string) {
+    Alert.alert('Delete perk?', 'This cannot be undone.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: async () => {
+        const { error } = await supabase.from('company_perks').delete().eq('id', perkId);
+        if (error) Alert.alert('Error', error.message);
+        else refetchPerks();
+      }},
+    ]);
+  }
 
   async function setVideoStatus(videoId: string, status: 'live' | 'pending' | 'rejected') {
     const { error } = await supabase
@@ -660,6 +721,38 @@ export default function AdminScreen() {
           )}
         </View>
 
+        {/* Perks & Benefits */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionLabel}>Perks & Benefits</Text>
+            <TouchableOpacity onPress={() => setShowPerksManager(true)}>
+              <Text style={styles.sectionAction}>Manage</Text>
+            </TouchableOpacity>
+          </View>
+          {perksLoading ? (
+            <ActivityIndicator color="#1A5CFF" size="small" style={{ marginVertical: 12 }} />
+          ) : perks.length === 0 ? (
+            <TouchableOpacity style={styles.emptyPerksZone} onPress={() => setShowPerksManager(true)}>
+              <Text style={styles.emptyPerksIcon}>🎁</Text>
+              <Text style={styles.emptyPerksTitle}>Add your perks</Text>
+              <Text style={styles.emptyPerksSub}>Show job seekers why your company is a great place to work.</Text>
+            </TouchableOpacity>
+          ) : (
+            perks.map((perk) => (
+              <View key={perk.id} style={styles.perkRow}>
+                <Text style={styles.perkRowIcon}>{perk.icon}</Text>
+                <View style={styles.perkRowInfo}>
+                  <Text style={styles.perkRowTitle}>{perk.title}</Text>
+                  {perk.description ? <Text style={styles.perkRowDesc} numberOfLines={1}>{perk.description}</Text> : null}
+                </View>
+                <TouchableOpacity style={styles.perkRowBtn} onPress={() => { openEditPerk(perk); }}>
+                  <Text style={styles.perkRowBtnText}>Edit</Text>
+                </TouchableOpacity>
+              </View>
+            ))
+          )}
+        </View>
+
         {/* Company Settings */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Company Settings</Text>
@@ -718,6 +811,101 @@ export default function AdminScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* Perks Manager Modal */}
+      <Modal visible={showPerksManager} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.replyModal, { maxHeight: '85%' }]}>
+            <View style={styles.modalHandle} />
+            <View style={styles.replyHeader}>
+              <Text style={styles.replyTitle}>Perks & Benefits</Text>
+              <TouchableOpacity onPress={() => setShowPerksManager(false)}>
+                <Text style={styles.closeBtn}>Done</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {perks.map((perk) => (
+                <View key={perk.id} style={styles.managePerkRow}>
+                  <Text style={styles.managePerkIcon}>{perk.icon}</Text>
+                  <View style={styles.managePerkInfo}>
+                    <Text style={styles.managePerkTitle}>{perk.title}</Text>
+                  </View>
+                  <TouchableOpacity style={styles.perkEditBtn} onPress={() => { openEditPerk(perk); setShowPerksManager(false); }}>
+                    <Text style={styles.perkEditBtnText}>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.perkDeleteBtn} onPress={() => deletePerk(perk.id)}>
+                    <Text style={styles.perkDeleteBtnText}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+              {perks.length > 0 && <View style={styles.perkDivider} />}
+              <Text style={styles.templateSectionLabel}>Add from templates</Text>
+              {PERK_TEMPLATES.filter((t) => !perks.some((p) => p.title === t.title)).map((template, i) => (
+                <TouchableOpacity key={i} style={styles.templateRow} onPress={() => addPerkFromTemplate(template.icon, template.title, template.description)}>
+                  <Text style={styles.templateIcon}>{template.icon}</Text>
+                  <Text style={styles.templateTitle}>{template.title}</Text>
+                  <Text style={styles.templateAdd}>+ Add</Text>
+                </TouchableOpacity>
+              ))}
+              <TouchableOpacity style={styles.addCustomBtn} onPress={() => { openAddCustomPerk(); setShowPerksManager(false); }}>
+                <Text style={styles.addCustomBtnText}>+ Add custom perk</Text>
+              </TouchableOpacity>
+              <View style={{ height: 20 }} />
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Edit / Create Perk Modal */}
+      <Modal visible={editingPerk !== null} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <KeyboardAvoidingView style={styles.replyModal} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.replyTitle}>{editingPerk?.id ? 'Edit Perk' : 'New Perk'}</Text>
+            <Text style={styles.settingsLabel}>Icon (emoji)</Text>
+            <TextInput
+              style={styles.formInput}
+              value={perkIcon}
+              onChangeText={setPerkIcon}
+              placeholder="✨"
+              placeholderTextColor="#aaa"
+              maxLength={2}
+            />
+            <Text style={styles.settingsLabel}>Title *</Text>
+            <TextInput
+              style={styles.formInput}
+              value={perkTitle}
+              onChangeText={setPerkTitle}
+              placeholder="e.g. Unlimited PTO"
+              placeholderTextColor="#aaa"
+              editable={!savingPerk}
+            />
+            <Text style={styles.settingsLabel}>Description</Text>
+            <TextInput
+              style={[styles.formInput, styles.formInputMulti]}
+              value={perkDesc}
+              onChangeText={setPerkDesc}
+              placeholder="Describe this benefit in detail..."
+              placeholderTextColor="#aaa"
+              multiline
+              numberOfLines={4}
+              editable={!savingPerk}
+            />
+            {savingPerk ? (
+              <ActivityIndicator color="#1A5CFF" style={{ marginTop: 16 }} />
+            ) : (
+              <>
+                <TouchableOpacity style={styles.saveBtn} onPress={savePerk}>
+                  <Text style={styles.saveBtnText}>Save perk</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={{ alignItems: 'center', marginTop: 12 }} onPress={() => setEditingPerk(null)}>
+                  <Text style={{ color: '#aaa', fontSize: 13 }}>Cancel</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
 
       {/* Reply Modal */}
       <Modal visible={selectedConv !== null} animationType="slide" transparent>
@@ -926,6 +1114,35 @@ const styles = StyleSheet.create({
   gateBtnText: { color: 'white', fontSize: 15, fontWeight: '700' },
   gateSecondaryBtn: { marginTop: 16 },
   gateSecondaryBtnText: { color: '#1A5CFF', fontSize: 13, fontWeight: '600' },
+  sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  sectionAction: { color: '#1A5CFF', fontSize: 13, fontWeight: '600' },
+  emptyPerksZone: { borderWidth: 1.5, borderColor: '#E5E7EB', borderStyle: 'dashed', borderRadius: 10, padding: 20, alignItems: 'center' },
+  emptyPerksIcon: { fontSize: 28, marginBottom: 8 },
+  emptyPerksTitle: { fontSize: 15, fontWeight: '600', color: '#333', marginBottom: 4 },
+  emptyPerksSub: { fontSize: 13, color: '#888', textAlign: 'center' },
+  perkRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
+  perkRowIcon: { fontSize: 20, marginRight: 12 },
+  perkRowInfo: { flex: 1 },
+  perkRowTitle: { fontSize: 14, fontWeight: '600', color: '#1a1a1a' },
+  perkRowDesc: { fontSize: 12, color: '#888', marginTop: 2 },
+  perkRowBtn: { paddingHorizontal: 10, paddingVertical: 4, backgroundColor: '#F0F4FF', borderRadius: 6 },
+  perkRowBtnText: { color: '#1A5CFF', fontSize: 12, fontWeight: '600' },
+  managePerkRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
+  managePerkIcon: { fontSize: 20, marginRight: 10 },
+  managePerkInfo: { flex: 1 },
+  managePerkTitle: { fontSize: 14, fontWeight: '600', color: '#1a1a1a' },
+  perkEditBtn: { paddingHorizontal: 10, paddingVertical: 4, backgroundColor: '#F0F4FF', borderRadius: 6, marginRight: 6 },
+  perkEditBtnText: { color: '#1A5CFF', fontSize: 12, fontWeight: '600' },
+  perkDeleteBtn: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#FEE2E2', alignItems: 'center', justifyContent: 'center' },
+  perkDeleteBtnText: { color: '#EF4444', fontSize: 12, fontWeight: '700' },
+  perkDivider: { height: 1, backgroundColor: '#E5E7EB', marginVertical: 16 },
+  templateSectionLabel: { fontSize: 12, fontWeight: '600', color: '#888', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
+  templateRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F9FAFB' },
+  templateIcon: { fontSize: 18, marginRight: 10 },
+  templateTitle: { flex: 1, fontSize: 14, color: '#333' },
+  templateAdd: { color: '#1A5CFF', fontSize: 13, fontWeight: '600' },
+  addCustomBtn: { marginTop: 16, borderWidth: 1.5, borderColor: '#1A5CFF', borderRadius: 10, padding: 14, alignItems: 'center' },
+  addCustomBtnText: { color: '#1A5CFF', fontWeight: '600', fontSize: 14 },
   logoRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 12, padding: 14, marginBottom: 16, gap: 14 },
   logoPreview: { width: 52, height: 52, borderRadius: 10 },
   logoPlaceholder: { width: 52, height: 52, borderRadius: 10, backgroundColor: '#EEF3FF', alignItems: 'center', justifyContent: 'center' },

@@ -102,8 +102,9 @@ export default function HomeScreen() {
           <Text style={styles.ctaBtnText}>{t('watchVideos')}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.switchBtn} onPress={clearCompany}>
-          <Text style={styles.switchBtnText}>Switch Company</Text>
+        <TouchableOpacity style={styles.searchBtn} onPress={clearCompany}>
+          <Text style={styles.searchBtnIcon}>🔍</Text>
+          <Text style={styles.searchBtnText}>Search Companies</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -159,8 +160,9 @@ const styles = StyleSheet.create({
   aboutText: { fontSize: 14, color: '#444', lineHeight: 22 },
   ctaBtn: { backgroundColor: '#1A5CFF', margin: 16, padding: 16, borderRadius: 12, alignItems: 'center' },
   ctaBtnText: { color: 'white', fontSize: 15, fontWeight: '600' },
-  switchBtn: { alignItems: 'center', marginBottom: 32, paddingVertical: 12 },
-  switchBtnText: { color: '#888', fontSize: 13, textDecorationLine: 'underline' },
+  searchBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, margin: 16, marginTop: 4, marginBottom: 32, padding: 14, borderRadius: 12, borderWidth: 1.5, borderColor: '#1A5CFF', backgroundColor: 'white' },
+  searchBtnIcon: { fontSize: 16 },
+  searchBtnText: { color: '#1A5CFF', fontSize: 15, fontWeight: '600' },
   // Perk detail modal
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   detailSheet: { backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 28, paddingBottom: 44 },

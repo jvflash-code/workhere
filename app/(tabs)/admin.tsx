@@ -297,43 +297,55 @@ export default function AdminScreen() {
   }
 
   async function handleLogoUpload() {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Please allow access to your photo library.');
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (result.canceled || !result.assets?.[0]) return;
+    Alert.alert(
+      'Upload Company Logo',
+      'Square image recommended (1:1 ratio)\nMin size: 200 × 200px\nFormats: JPG or PNG\nMax file size: 2MB',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Choose Photo', onPress: async () => {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission needed', 'Please allow access to your photo library.');
+              return;
+            }
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.8,
+            });
+            if (result.canceled || !result.assets?.[0]) return;
 
-    setLogoUploading(true);
-    try {
-      const uri = result.assets[0].uri;
-      const ext = uri.split('.').pop() ?? 'jpg';
-      const fileName = `logos/${effectiveCompanyId!}.${ext}`;
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      const { error: uploadError } = await supabase.storage
-        .from('videos')
-        .upload(fileName, blob, { contentType: `image/${ext}`, upsert: true });
-      if (uploadError) throw uploadError;
-      const { data: urlData } = supabase.storage.from('videos').getPublicUrl(fileName);
-      const { error: updateError } = await supabase
-        .from('companies')
-        .update({ logo_url: urlData.publicUrl })
-        .eq('id', effectiveCompanyId!);
-      if (updateError) throw updateError;
-      Alert.alert('Logo updated!', 'Your company logo has been saved.');
-    } catch (err: any) {
-      Alert.alert('Upload failed', err.message ?? 'Something went wrong.');
-    } finally {
-      setLogoUploading(false);
-    }
+            setLogoUploading(true);
+            try {
+              const uri = result.assets[0].uri;
+              const ext = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
+              const fileName = `${effectiveCompanyId!}.${ext}`;
+              const response = await fetch(uri);
+              const blob = await response.blob();
+              const { error: uploadError } = await supabase.storage
+                .from('logos')
+                .upload(fileName, blob, { contentType: `image/${ext}`, upsert: true });
+              if (uploadError) throw uploadError;
+              const { data: urlData } = supabase.storage.from('logos').getPublicUrl(fileName);
+              const { error: updateError } = await supabase
+                .from('companies')
+                .update({ logo_url: urlData.publicUrl })
+                .eq('id', effectiveCompanyId!);
+              if (updateError) throw updateError;
+              Alert.alert('Logo updated!', 'Your company logo has been saved.');
+            } catch (err: any) {
+              Alert.alert('Upload failed', err.message ?? 'Something went wrong.');
+            } finally {
+              setLogoUploading(false);
+            }
+          }
+        },
+      ]
+    );
   }
+
 
   async function setVideoStatus(videoId: string, status: 'live' | 'pending' | 'rejected') {
     const { error } = await supabase

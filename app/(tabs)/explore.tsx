@@ -36,6 +36,12 @@ export default function VideosScreen() {
 
         {loading ? (
           <ActivityIndicator color="#1A5CFF" size="large" style={styles.loader} />
+        ) : videos.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyIcon}>🎬</Text>
+            <Text style={styles.emptyTitle}>No videos yet</Text>
+            <Text style={styles.emptySub}>Employee testimonials will appear here once they go live.</Text>
+          </View>
         ) : (
           videos.map((v: VideoItem) => {
             const emp = v.employees;
@@ -99,6 +105,10 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: '700', color: 'white' },
   sub: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
   loader: { marginTop: 60 },
+  emptyState: { alignItems: 'center', justifyContent: 'center', padding: 48, marginTop: 32 },
+  emptyIcon: { fontSize: 48, marginBottom: 16 },
+  emptyTitle: { fontSize: 18, fontWeight: '700', color: '#333', marginBottom: 8 },
+  emptySub: { fontSize: 14, color: '#888', textAlign: 'center', lineHeight: 20 },
   card: { backgroundColor: 'white', margin: 12, marginBottom: 0, borderRadius: 14, padding: 16 },
   cardTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 10 },
   avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },

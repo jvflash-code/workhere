@@ -110,6 +110,13 @@ export default function AdminScreen() {
   const videosUsed = videos.filter((v: VideoItem) => v.status === 'live').length;
   const atLimit = videosUsed >= videoLimit;
 
+  // Sync context to employer's own company so all tabs show the right data
+  useEffect(() => {
+    if (profile?.role === 'employer' && profile.company_id) {
+      setCompanyById(profile.company_id);
+    }
+  }, [profile?.company_id]);
+
   // Pre-fill about text when company loads
   useEffect(() => {
     if (company?.about) setAboutText(company.about);

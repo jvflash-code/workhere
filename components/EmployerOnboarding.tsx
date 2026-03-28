@@ -90,12 +90,11 @@ export default function EmployerOnboarding({
       const userId = data.user?.id;
       if (!userId) throw new Error('Account created but no user ID returned.');
 
-      // Create employer profile
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: userId,
-        role: 'employer',
-        full_name: fullName.trim(),
-      });
+      // Update profile created by DB trigger to employer role
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ role: 'employer', full_name: fullName.trim() })
+        .eq('id', userId);
 
       if (profileError) throw profileError;
 

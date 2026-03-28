@@ -38,7 +38,7 @@ const translations = {
     quote4: 'The commission structure is the best I have seen and the team has your back.',
 
     // Chat screen
-    chatWith: 'Chat with Maria',
+    chatWith: 'Chat with',
     chatSub: 'Senior Software Engineer',
     autoTranslate: 'Auto-translate on',
     chatPlaceholder: 'Type in English or Spanish...',
@@ -130,7 +130,7 @@ const translations = {
     quote4: 'La estructura de comisiones es la mejor que he visto y el equipo te apoya.',
 
     // Chat screen
-    chatWith: 'Chatear con Maria',
+    chatWith: 'Chatear con',
     chatSub: 'Ingeniera de Software Senior',
     autoTranslate: 'Traducción automática activada',
     chatPlaceholder: 'Escribe en inglés o español...',

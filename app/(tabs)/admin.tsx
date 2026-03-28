@@ -1,9 +1,11 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import EmployerOnboarding from '../../components/EmployerOnboarding';
 import LangToggle from '../../components/LangToggle';
 import { useActiveCompany } from '../../contexts/CompanyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useAuth } from '../../hooks/useAuth';
 import { useAllVideos, useCompany, VideoItem } from '../../hooks/useCompany';
 import { supabase } from '../../lib/supabase';
 
@@ -26,10 +28,16 @@ type ThreadMessage = {
 };
 
 export default function AdminScreen() {
-  const { companyId } = useActiveCompany();
+  const { companyId, setCompanyById } = useActiveCompany();
   const { t } = useLanguage();
-  const { company } = useCompany(companyId!);
-  const { videos, loading: videosLoading, refetch } = useAllVideos(companyId!);
+  const { user, profile, loading: authLoading, refetchProfile } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Employers always manage their own company, not the browsed company
+  const effectiveCompanyId = profile?.role === 'employer' ? profile.company_id : companyId;
+
+  const { company } = useCompany(effectiveCompanyId!);
+  const { videos, loading: videosLoading, refetch } = useAllVideos(effectiveCompanyId!);
   const [currentPlan, setCurrentPlan] = useState<Plan>('growth');
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [annual, setAnnual] = useState(false);
@@ -107,7 +115,7 @@ export default function AdminScreen() {
       const { data: convs } = await supabase
         .from('conversations')
         .select('id, user_id, created_at')
-        .eq('company_id', companyId!)
+        .eq('company_id', effectiveCompanyId!)
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(20);
@@ -116,6 +124,13 @@ export default function AdminScreen() {
         setConversations([]);
         return;
       }
+
+      // Fetch profile names for all users in one query
+      const userIds = convs.map((c) => c.user_id).filter(Boolean) as string[];
+      const { data: profiles } = userIds.length
+        ? await supabase.from('profiles').select('id, full_name').in('id', userIds)
+        : { data: [] };
+      const profileMap = Object.fromEntries((profiles ?? []).map((p) => [p.id, p.full_name]));
 
       // For each conversation, get the last message
       const rows: ConversationRow[] = await Promise.all(
@@ -128,12 +143,14 @@ export default function AdminScreen() {
             .limit(1);
 
           const lastMsg = msgs?.[0];
-          const emailPart = conv.user_id ? conv.user_id.slice(0, 8) : 'Anonymous';
+          const displayName = conv.user_id
+            ? (profileMap[conv.user_id] ?? `User ${conv.user_id.slice(0, 8)}`)
+            : 'Anonymous';
 
           return {
             id: conv.id,
             user_id: conv.user_id,
-            user_email: emailPart,
+            user_email: displayName,
             last_message: lastMsg?.content ?? 'No messages yet',
             last_message_at: lastMsg?.created_at ?? conv.created_at,
             unread: lastMsg?.role === 'user',
@@ -272,7 +289,7 @@ export default function AdminScreen() {
 
       const { data: emp, error: empError } = await supabase
         .from('employees')
-        .insert({ company_id: companyId!, name: empName.trim(), role: empRole.trim(), initials, color, years_at_company: empYears.trim() || '1 year' })
+        .insert({ company_id: effectiveCompanyId!, name: empName.trim(), role: empRole.trim(), initials, color, years_at_company: empYears.trim() || '1 year' })
         .select()
         .single();
 
@@ -281,7 +298,7 @@ export default function AdminScreen() {
       // 2. Upload video to Storage
       setUploadProgress('Uploading video...');
       const ext = pendingVideoUri.split('.').pop() ?? 'mp4';
-      const fileName = `${companyId!}/${emp.id}-${Date.now()}.${ext}`;
+      const fileName = `${effectiveCompanyId!}/${emp.id}-${Date.now()}.${ext}`;
 
       const response = await fetch(pendingVideoUri);
       const blob = await response.blob();
@@ -299,7 +316,7 @@ export default function AdminScreen() {
       setUploadProgress('Saving video record...');
       const { error: videoError } = await supabase
         .from('videos')
-        .insert({ company_id: companyId!, employee_id: emp.id, video_url: publicUrl, duration: '0:00', quote: videoQuote.trim() || '', status: 'pending', views: 0 });
+        .insert({ company_id: effectiveCompanyId!, employee_id: emp.id, video_url: publicUrl, duration: '0:00', quote: videoQuote.trim() || '', status: 'pending', views: 0 });
 
       if (videoError) throw videoError;
 
@@ -316,6 +333,64 @@ export default function AdminScreen() {
   function confirmUpgrade() {
     setCurrentPlan(selectedPlan);
     setShowUpgrade(false);
+  }
+
+  // Auth loading
+  if (authLoading) {
+    return (
+      <View style={styles.gateContainer}>
+        <ActivityIndicator size="large" color="#1A5CFF" />
+      </View>
+    );
+  }
+
+  // Not an employer — show onboarding prompt
+  if (!user || profile?.role !== 'employer') {
+    return (
+      <View style={styles.gateContainer}>
+        <Text style={styles.gateLogo}>Why<Text style={{ color: '#1A5CFF' }}>Work</Text>Here</Text>
+        <Text style={styles.gateTitle}>Showcase your company culture</Text>
+        <Text style={styles.gateSub}>
+          Create a free employer profile so job seekers can hear directly from your team.
+        </Text>
+        <TouchableOpacity style={styles.gateBtn} onPress={() => setShowOnboarding(true)}>
+          <Text style={styles.gateBtnText}>Set up my company →</Text>
+        </TouchableOpacity>
+        <EmployerOnboarding
+          visible={showOnboarding}
+          onClose={() => setShowOnboarding(false)}
+          onComplete={(id) => {
+            setCompanyById(id);
+            refetchProfile();
+            setShowOnboarding(false);
+          }}
+        />
+      </View>
+    );
+  }
+
+  // Employer signed in but hasn't created a company yet
+  if (profile.role === 'employer' && !profile.company_id) {
+    return (
+      <View style={styles.gateContainer}>
+        <Text style={styles.gateTitle}>Almost there!</Text>
+        <Text style={styles.gateSub}>Finish setting up your company profile to get started.</Text>
+        <TouchableOpacity style={styles.gateBtn} onPress={() => setShowOnboarding(true)}>
+          <Text style={styles.gateBtnText}>Complete setup →</Text>
+        </TouchableOpacity>
+        <EmployerOnboarding
+          visible={showOnboarding}
+          onClose={() => setShowOnboarding(false)}
+          onComplete={(id) => {
+            setCompanyById(id);
+            refetchProfile();
+            setShowOnboarding(false);
+          }}
+          startAtStep={2}
+          existingUserId={user.id}
+        />
+      </View>
+    );
   }
 
   return (
@@ -353,7 +428,7 @@ export default function AdminScreen() {
                   <Text style={styles.convAvatarText}>{getInitials(conv.user_email)}</Text>
                 </View>
                 <View style={styles.convInfo}>
-                  <Text style={styles.convEmail} numberOfLines={1}>User {conv.user_id?.slice(0, 8) ?? 'Anonymous'}</Text>
+                  <Text style={styles.convEmail} numberOfLines={1}>{conv.user_email}</Text>
                   <Text style={styles.convPreview} numberOfLines={1}>{conv.last_message}</Text>
                 </View>
                 <View style={styles.convMeta}>
@@ -468,7 +543,7 @@ export default function AdminScreen() {
             <View style={styles.modalHandle} />
             <View style={styles.replyHeader}>
               <Text style={styles.replyTitle}>
-                User {selectedConv?.user_id?.slice(0, 8) ?? 'Anonymous'}
+                {selectedConv?.user_email ?? 'Anonymous'}
               </Text>
               <TouchableOpacity onPress={() => setSelectedConv(null)}>
                 <Text style={styles.closeBtn}>Close</Text>
@@ -658,6 +733,12 @@ export default function AdminScreen() {
 }
 
 const styles = StyleSheet.create({
+  gateContainer: { flex: 1, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center', padding: 36 },
+  gateLogo: { fontSize: 26, fontWeight: '700', color: '#333', marginBottom: 24 },
+  gateTitle: { fontSize: 22, fontWeight: '700', color: '#1a1a1a', textAlign: 'center', marginBottom: 10 },
+  gateSub: { fontSize: 14, color: '#888', textAlign: 'center', lineHeight: 21, marginBottom: 32 },
+  gateBtn: { backgroundColor: '#1A5CFF', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32 },
+  gateBtnText: { color: 'white', fontSize: 15, fontWeight: '700' },
   root: { flex: 1 },
   container: { flex: 1, backgroundColor: '#f5f5f5' },
   header: { backgroundColor: '#1A5CFF', padding: 24, paddingTop: 60 },

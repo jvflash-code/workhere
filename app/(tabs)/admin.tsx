@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import EmployerOnboarding from '../../components/EmployerOnboarding';
 import LangToggle from '../../components/LangToggle';
+import SignInSheet from '../../components/SignInSheet';
 import { useActiveCompany } from '../../contexts/CompanyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -32,6 +33,7 @@ export default function AdminScreen() {
   const { t } = useLanguage();
   const { user, profile, loading: authLoading, refetchProfile } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
 
   // Employers always manage their own company, not the browsed company
   const effectiveCompanyId = profile?.role === 'employer' ? profile.company_id : companyId;
@@ -356,6 +358,9 @@ export default function AdminScreen() {
         <TouchableOpacity style={styles.gateBtn} onPress={() => setShowOnboarding(true)}>
           <Text style={styles.gateBtnText}>Set up my company →</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.gateSecondaryBtn} onPress={() => setShowSignIn(true)}>
+          <Text style={styles.gateSecondaryBtnText}>Already have an account? Sign in</Text>
+        </TouchableOpacity>
         <EmployerOnboarding
           visible={showOnboarding}
           onClose={() => setShowOnboarding(false)}
@@ -365,6 +370,7 @@ export default function AdminScreen() {
             setShowOnboarding(false);
           }}
         />
+        <SignInSheet visible={showSignIn} onClose={() => { setShowSignIn(false); refetchProfile(); }} />
       </View>
     );
   }
@@ -739,6 +745,8 @@ const styles = StyleSheet.create({
   gateSub: { fontSize: 14, color: '#888', textAlign: 'center', lineHeight: 21, marginBottom: 32 },
   gateBtn: { backgroundColor: '#1A5CFF', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32 },
   gateBtnText: { color: 'white', fontSize: 15, fontWeight: '700' },
+  gateSecondaryBtn: { marginTop: 16 },
+  gateSecondaryBtnText: { color: '#1A5CFF', fontSize: 13, fontWeight: '600' },
   root: { flex: 1 },
   container: { flex: 1, backgroundColor: '#f5f5f5' },
   header: { backgroundColor: '#1A5CFF', padding: 24, paddingTop: 60 },

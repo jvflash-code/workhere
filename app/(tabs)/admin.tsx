@@ -72,6 +72,9 @@ export default function AdminScreen() {
   const [empYears, setEmpYears] = useState('');
   const [videoQuote, setVideoQuote] = useState('');
 
+  // Metrics state
+  const [chatsThisWeek, setChatsThisWeek] = useState<number | null>(null);
+
   // Perks state
   const { perks, loading: perksLoading, refetch: refetchPerks } = useCompanyPerks(effectiveCompanyId);
   const [showPerksManager, setShowPerksManager] = useState(false);
@@ -158,6 +161,18 @@ export default function AdminScreen() {
   useEffect(() => {
     loadInbox();
   }, []);
+
+  // Load chats-this-week count
+  useEffect(() => {
+    if (!effectiveCompanyId) return;
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    supabase
+      .from('conversations')
+      .select('id', { count: 'exact', head: true })
+      .eq('company_id', effectiveCompanyId)
+      .gte('created_at', since)
+      .then(({ count }) => setChatsThisWeek(count ?? 0));
+  }, [effectiveCompanyId]);
 
   async function loadInbox() {
     setInboxLoading(true);
@@ -618,7 +633,9 @@ export default function AdminScreen() {
 
         <View style={styles.metricsRow}>
           <View style={styles.metric}>
-            <Text style={styles.metricVal}>1,204</Text>
+            <Text style={styles.metricVal}>
+              {company?.view_count != null ? company.view_count.toLocaleString() : '—'}
+            </Text>
             <Text style={styles.metricLbl}>{t('profileViews')}</Text>
           </View>
           <View style={styles.metric}>
@@ -626,7 +643,9 @@ export default function AdminScreen() {
             <Text style={styles.metricLbl}>{t('videosLive')}</Text>
           </View>
           <View style={styles.metric}>
-            <Text style={styles.metricVal}>{conversations.length}</Text>
+            <Text style={styles.metricVal}>
+              {chatsThisWeek !== null ? chatsThisWeek : '—'}
+            </Text>
             <Text style={styles.metricLbl}>{t('chatsThisWeek')}</Text>
           </View>
         </View>

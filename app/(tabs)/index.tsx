@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import LangToggle from '../../components/LangToggle';
 import { useActiveCompany } from '../../contexts/CompanyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCompany, useCompanyPerks, CompanyPerk } from '../../hooks/useCompany';
+import { supabase } from '../../lib/supabase';
 
 export default function HomeScreen() {
   const { companyId, clearCompany } = useActiveCompany();
@@ -12,6 +13,12 @@ export default function HomeScreen() {
   const { company, loading } = useCompany(companyId!);
   const { perks, loading: perksLoading } = useCompanyPerks(companyId);
   const [selectedPerk, setSelectedPerk] = useState<CompanyPerk | null>(null);
+
+  // Track a profile view each time a company page loads
+  useEffect(() => {
+    if (!companyId) return;
+    supabase.rpc('increment_company_views', { company_id_param: companyId });
+  }, [companyId]);
 
   return (
     <>

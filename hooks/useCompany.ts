@@ -10,6 +10,7 @@ export type Company = {
   employee_count: number;
   rating: number;
   recommend_pct: number;
+  view_count: number;
 };
 
 export type Employee = {

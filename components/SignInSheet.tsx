@@ -98,7 +98,7 @@ export default function SignInSheet({ visible, onClose }: Props) {
               <TextInput
                 style={styles.input}
                 placeholder="Email"
-                placeholderTextColor="#aaa"
+                placeholderTextColor="#9A9285"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -108,7 +108,7 @@ export default function SignInSheet({ visible, onClose }: Props) {
               <TextInput
                 style={styles.input}
                 placeholder="Password"
-                placeholderTextColor="#aaa"
+                placeholderTextColor="#9A9285"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
@@ -145,7 +145,7 @@ export default function SignInSheet({ visible, onClose }: Props) {
               <TextInput
                 style={styles.input}
                 placeholder="Email"
-                placeholderTextColor="#aaa"
+                placeholderTextColor="#9A9285"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -155,7 +155,7 @@ export default function SignInSheet({ visible, onClose }: Props) {
               <TextInput
                 style={styles.input}
                 placeholder="Password (min 6 characters)"
-                placeholderTextColor="#aaa"
+                placeholderTextColor="#9A9285"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
@@ -186,24 +186,24 @@ export default function SignInSheet({ visible, onClose }: Props) {
 const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   sheet: { backgroundColor: 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 28, paddingBottom: 52, alignItems: 'center' },
-  handle: { width: 36, height: 4, backgroundColor: '#ddd', borderRadius: 2, marginBottom: 24 },
-  logo: { fontSize: 26, fontWeight: '700', color: '#333', marginBottom: 8 },
-  logoAccent: { color: '#1A5CFF' },
-  title: { fontSize: 20, fontWeight: '700', color: '#333', textAlign: 'center', marginBottom: 8 },
-  sub: { fontSize: 14, color: '#888', textAlign: 'center', lineHeight: 20, marginBottom: 28 },
+  handle: { width: 36, height: 4, backgroundColor: '#E5DECF', borderRadius: 2, marginBottom: 24 },
+  logo: { fontSize: 26, fontWeight: '700', color: '#26221C', marginBottom: 8 },
+  logoAccent: { color: '#D85A30' },
+  title: { fontSize: 20, fontWeight: '700', color: '#26221C', textAlign: 'center', marginBottom: 8 },
+  sub: { fontSize: 14, color: '#6E675C', textAlign: 'center', lineHeight: 20, marginBottom: 28 },
   appleBtn: { backgroundColor: '#000', borderRadius: 14, padding: 16, width: '100%', alignItems: 'center', marginBottom: 12 },
   appleBtnText: { color: 'white', fontSize: 15, fontWeight: '600' },
-  googleBtn: { backgroundColor: 'white', borderRadius: 14, padding: 16, width: '100%', alignItems: 'center', borderWidth: 1.5, borderColor: '#ddd', marginBottom: 20 },
-  googleBtnText: { color: '#333', fontSize: 15, fontWeight: '600' },
+  googleBtn: { backgroundColor: 'white', borderRadius: 14, padding: 16, width: '100%', alignItems: 'center', borderWidth: 1.5, borderColor: '#E5DECF', marginBottom: 20 },
+  googleBtnText: { color: '#26221C', fontSize: 15, fontWeight: '600' },
   emailBtn: { marginBottom: 16 },
-  emailBtnText: { color: '#1A5CFF', fontSize: 14, fontWeight: '600' },
+  emailBtnText: { color: '#B5471F', fontSize: 14, fontWeight: '600' },
   dismissBtn: {},
-  dismissText: { color: '#aaa', fontSize: 13 },
+  dismissText: { color: '#8A8275', fontSize: 13 },
   backBtn: { alignSelf: 'flex-start', marginBottom: 16 },
-  backText: { color: '#1A5CFF', fontSize: 14, fontWeight: '600' },
-  input: { width: '100%', backgroundColor: '#f5f5f5', borderRadius: 12, padding: 14, fontSize: 14, color: '#333', marginBottom: 12 },
-  errorText: { color: '#ff3b30', fontSize: 12, marginBottom: 12, textAlign: 'center' },
-  btnDisabled: { backgroundColor: '#999' },
+  backText: { color: '#B5471F', fontSize: 14, fontWeight: '600' },
+  input: { width: '100%', backgroundColor: '#FAF6EF', borderRadius: 12, padding: 14, fontSize: 14, color: '#26221C', marginBottom: 12 },
+  errorText: { color: '#ff3b30', fontSize: 13, marginBottom: 12, textAlign: 'center' },
+  btnDisabled: { backgroundColor: '#857D70' },
   toggleBtn: { marginTop: 12, marginBottom: 8 },
-  toggleText: { color: '#1A5CFF', fontSize: 13 },
+  toggleText: { color: '#B5471F', fontSize: 13 },
 });

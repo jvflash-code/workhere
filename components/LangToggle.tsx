@@ -32,11 +32,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   text: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
-    color: 'rgba(255,255,255,0.8)',
+    color: 'rgba(255,255,255,0.88)',
   },
   activeText: {
-    color: '#1A5CFF',
+    color: '#B5471F',
   },
 });

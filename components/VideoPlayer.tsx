@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   },
   avatarText: { color: 'white', fontWeight: '700', fontSize: 15 },
   speakerName: { color: 'white', fontSize: 16, fontWeight: '700' },
-  speakerRole: { color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 2 },
+  speakerRole: { color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 2 },
   progressBg: {
     height: 3,
     backgroundColor: 'rgba(255,255,255,0.3)',
@@ -189,5 +189,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  timeText: { color: 'rgba(255,255,255,0.7)', fontSize: 11 },
+  timeText: { color: 'rgba(255,255,255,0.78)', fontSize: 12 },
 });

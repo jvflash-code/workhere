@@ -51,14 +51,14 @@ export default function CompanyDirectory() {
         <TextInput
           style={styles.searchInput}
           placeholder="Search companies..."
-          placeholderTextColor="#aaa"
+          placeholderTextColor="#9A9285"
           value={search}
           onChangeText={setSearch}
         />
       </View>
 
       {loading ? (
-        <ActivityIndicator color="#1A5CFF" size="large" style={styles.loader} />
+        <ActivityIndicator color="#D85A30" size="large" style={styles.loader} />
       ) : filtered.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyText}>No companies found</Text>
@@ -93,24 +93,24 @@ export default function CompanyDirectory() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  header: { backgroundColor: '#1A5CFF', padding: 24, paddingTop: 60, paddingBottom: 20 },
+  container: { flex: 1, backgroundColor: '#FAF6EF' },
+  header: { backgroundColor: '#1C1916', padding: 24, paddingTop: 60, paddingBottom: 20 },
   logo: { fontSize: 28, fontWeight: '700', color: 'white' },
-  logoAccent: { color: '#7BB3FF' },
-  sub: { fontSize: 14, color: 'rgba(255,255,255,0.8)', marginTop: 6 },
+  logoAccent: { color: '#E07B53' },
+  sub: { fontSize: 14, color: 'rgba(255,255,255,0.88)', marginTop: 6 },
   searchWrap: { padding: 12 },
-  searchInput: { backgroundColor: 'white', borderRadius: 12, padding: 14, fontSize: 14, color: '#333', borderWidth: 1, borderColor: '#eee' },
+  searchInput: { backgroundColor: 'white', borderRadius: 12, padding: 14, fontSize: 14, color: '#26221C', borderWidth: 1, borderColor: '#EDE7D9' },
   loader: { marginTop: 60 },
   empty: { alignItems: 'center', marginTop: 60 },
-  emptyText: { color: '#888', fontSize: 14 },
+  emptyText: { color: '#6E675C', fontSize: 14 },
   list: { paddingHorizontal: 12, paddingBottom: 24 },
-  card: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 12, padding: 14, marginBottom: 8, gap: 12 },
-  cardLogo: { width: 44, height: 44, borderRadius: 10, backgroundColor: '#1A5CFF', alignItems: 'center', justifyContent: 'center' },
+  card: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 12, padding: 14, marginBottom: 8, gap: 12, borderWidth: 1, borderColor: '#EDE5D6' },
+  cardLogo: { width: 44, height: 44, borderRadius: 10, backgroundColor: '#D85A30', alignItems: 'center', justifyContent: 'center' },
   cardLogoText: { fontSize: 20, fontWeight: '700', color: 'white' },
   cardInfo: { flex: 1 },
-  cardName: { fontSize: 15, fontWeight: '600', color: '#333' },
-  cardTagline: { fontSize: 12, color: '#888', marginTop: 2 },
+  cardName: { fontSize: 15, fontWeight: '600', color: '#26221C' },
+  cardTagline: { fontSize: 13, color: '#6E675C', marginTop: 2 },
   cardMeta: { flexDirection: 'row', gap: 10, marginTop: 4 },
-  cardStat: { fontSize: 11, color: '#1A5CFF', fontWeight: '600' },
-  arrow: { fontSize: 18, color: '#ccc' },
+  cardStat: { fontSize: 12, color: '#B5471F', fontWeight: '600' },
+  arrow: { fontSize: 18, color: '#C9C2B3' },
 });

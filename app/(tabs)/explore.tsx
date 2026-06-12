@@ -35,7 +35,7 @@ export default function VideosScreen() {
         </View>
 
         {loading ? (
-          <ActivityIndicator color="#1A5CFF" size="large" style={styles.loader} />
+          <ActivityIndicator color="#D85A30" size="large" style={styles.loader} />
         ) : videos.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyIcon}>🎬</Text>
@@ -99,23 +99,23 @@ export default function VideosScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  header: { backgroundColor: '#1A5CFF', padding: 24, paddingTop: 60 },
+  container: { flex: 1, backgroundColor: '#FAF6EF' },
+  header: { backgroundColor: '#1C1916', padding: 24, paddingTop: 60 },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   title: { fontSize: 22, fontWeight: '700', color: 'white' },
-  sub: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
+  sub: { fontSize: 13, color: 'rgba(255,255,255,0.88)', marginTop: 4 },
   loader: { marginTop: 60 },
   emptyState: { alignItems: 'center', justifyContent: 'center', padding: 48, marginTop: 32 },
   emptyIcon: { fontSize: 48, marginBottom: 16 },
-  emptyTitle: { fontSize: 18, fontWeight: '700', color: '#333', marginBottom: 8 },
-  emptySub: { fontSize: 14, color: '#888', textAlign: 'center', lineHeight: 20 },
+  emptyTitle: { fontSize: 18, fontWeight: '700', color: '#26221C', marginBottom: 8 },
+  emptySub: { fontSize: 14, color: '#6E675C', textAlign: 'center', lineHeight: 20 },
   card: { backgroundColor: 'white', margin: 12, marginBottom: 0, borderRadius: 14, padding: 16 },
   cardTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 10 },
   avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: 'white', fontWeight: '700', fontSize: 15 },
   cardInfo: { flex: 1 },
-  name: { fontSize: 15, fontWeight: '600', color: '#333' },
-  role: { fontSize: 12, color: '#888', marginTop: 2 },
+  name: { fontSize: 15, fontWeight: '600', color: '#26221C' },
+  role: { fontSize: 13, color: '#6E675C', marginTop: 2 },
   videoThumb: {
     backgroundColor: '#111',
     borderRadius: 10,
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#1A5CFF',
+    backgroundColor: '#D85A30',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -138,9 +138,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   playIcon: { color: 'white', fontSize: 18, marginLeft: 3 },
-  tapHint: { color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 8 },
-  duration: { position: 'absolute', bottom: 8, right: 10, fontSize: 11, color: 'rgba(255,255,255,0.7)' },
-  quote: { fontSize: 13, color: '#555', lineHeight: 20, marginBottom: 12 },
+  tapHint: { color: 'rgba(255,255,255,0.66)', fontSize: 12, marginTop: 8 },
+  duration: { position: 'absolute', bottom: 8, right: 10, fontSize: 12, color: 'rgba(255,255,255,0.78)' },
+  quote: { fontSize: 13, color: '#5C564C', lineHeight: 20, marginBottom: 12 },
   askBtn: { backgroundColor: '#f0f4ff', padding: 12, borderRadius: 10, alignItems: 'center' },
-  askBtnText: { color: '#1A5CFF', fontSize: 13, fontWeight: '600' },
+  askBtnText: { color: '#B5471F', fontSize: 13, fontWeight: '600' },
 });

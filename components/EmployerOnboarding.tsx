@@ -194,7 +194,7 @@ export default function EmployerOnboarding({
               <TextInput
                 style={styles.input}
                 placeholder="Jane Smith"
-                placeholderTextColor="#aaa"
+                placeholderTextColor="#9A9285"
                 value={fullName}
                 onChangeText={setFullName}
                 autoCapitalize="words"
@@ -205,7 +205,7 @@ export default function EmployerOnboarding({
               <TextInput
                 style={styles.input}
                 placeholder="jane@company.com"
-                placeholderTextColor="#aaa"
+                placeholderTextColor="#9A9285"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -218,7 +218,7 @@ export default function EmployerOnboarding({
               <TextInput
                 style={styles.input}
                 placeholder="Min 6 characters"
-                placeholderTextColor="#aaa"
+                placeholderTextColor="#9A9285"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
@@ -253,7 +253,7 @@ export default function EmployerOnboarding({
               <TextInput
                 style={styles.input}
                 placeholder="Acme Inc."
-                placeholderTextColor="#aaa"
+                placeholderTextColor="#9A9285"
                 value={companyName}
                 onChangeText={setCompanyName}
                 editable={!loading}
@@ -263,7 +263,7 @@ export default function EmployerOnboarding({
               <TextInput
                 style={styles.input}
                 placeholder="Where bold ideas become real products"
-                placeholderTextColor="#aaa"
+                placeholderTextColor="#9A9285"
                 value={tagline}
                 onChangeText={setTagline}
                 editable={!loading}
@@ -273,7 +273,7 @@ export default function EmployerOnboarding({
               <TextInput
                 style={styles.input}
                 placeholder="e.g. 250"
-                placeholderTextColor="#aaa"
+                placeholderTextColor="#9A9285"
                 value={employeeCount}
                 onChangeText={setEmployeeCount}
                 keyboardType="number-pad"
@@ -307,28 +307,28 @@ export default function EmployerOnboarding({
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'white' },
   scroll: { flexGrow: 1 },
-  header: { backgroundColor: '#1A5CFF', paddingTop: 60, paddingBottom: 28, paddingHorizontal: 24, alignItems: 'center' },
+  header: { backgroundColor: '#1C1916', paddingTop: 60, paddingBottom: 28, paddingHorizontal: 24, alignItems: 'center' },
   closeBtn: { position: 'absolute', top: 60, right: 24 },
-  closeBtnText: { color: 'rgba(255,255,255,0.8)', fontSize: 18, fontWeight: '600' },
+  closeBtnText: { color: 'rgba(255,255,255,0.88)', fontSize: 18, fontWeight: '600' },
   stepRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
   stepDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.3)' },
   stepDotActive: { backgroundColor: 'white' },
   stepLine: { width: 40, height: 2, backgroundColor: 'rgba(255,255,255,0.3)', marginHorizontal: 6 },
-  stepLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 12 },
+  stepLabel: { color: 'rgba(255,255,255,0.78)', fontSize: 13 },
   body: { padding: 28 },
-  logo: { fontSize: 22, fontWeight: '700', color: '#333', marginBottom: 16 },
-  logoAccent: { color: '#1A5CFF' },
-  title: { fontSize: 24, fontWeight: '700', color: '#1a1a1a', marginBottom: 8 },
-  sub: { fontSize: 14, color: '#888', lineHeight: 20, marginBottom: 28 },
-  label: { fontSize: 13, fontWeight: '600', color: '#555', marginBottom: 6 },
-  input: { backgroundColor: '#f5f5f5', borderRadius: 12, padding: 14, fontSize: 14, color: '#333', marginBottom: 16 },
+  logo: { fontSize: 22, fontWeight: '700', color: '#26221C', marginBottom: 16 },
+  logoAccent: { color: '#D85A30' },
+  title: { fontSize: 24, fontWeight: '700', color: '#1C1916', marginBottom: 8 },
+  sub: { fontSize: 14, color: '#6E675C', lineHeight: 20, marginBottom: 28 },
+  label: { fontSize: 13, fontWeight: '600', color: '#5C564C', marginBottom: 6 },
+  input: { backgroundColor: '#FAF6EF', borderRadius: 12, padding: 14, fontSize: 14, color: '#26221C', marginBottom: 16 },
   error: { color: '#ff3b30', fontSize: 13, marginBottom: 16, textAlign: 'center' },
-  primaryBtn: { backgroundColor: '#1A5CFF', borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8 },
+  primaryBtn: { backgroundColor: '#D85A30', borderRadius: 14, padding: 16, alignItems: 'center', marginTop: 8 },
   primaryBtnText: { color: 'white', fontSize: 16, fontWeight: '700' },
-  btnDisabled: { backgroundColor: '#7BA7FF' },
+  btnDisabled: { backgroundColor: '#E07B53' },
   backBtn: { marginBottom: 20 },
-  backBtnText: { color: '#1A5CFF', fontSize: 14, fontWeight: '600' },
-  planNote: { backgroundColor: '#EEF3FF', borderRadius: 12, padding: 14, marginBottom: 20 },
-  planNoteText: { fontSize: 13, color: '#555', lineHeight: 19 },
-  planNoteBold: { fontWeight: '700', color: '#1A5CFF' },
+  backBtnText: { color: '#B5471F', fontSize: 14, fontWeight: '600' },
+  planNote: { backgroundColor: '#FAECE7', borderRadius: 12, padding: 14, marginBottom: 20 },
+  planNoteText: { fontSize: 13, color: '#5C564C', lineHeight: 19 },
+  planNoteBold: { fontWeight: '700', color: '#B5471F' },
 });

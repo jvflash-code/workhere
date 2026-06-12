@@ -5,7 +5,26 @@
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
+/**
+ * "Storyteller" brand palette — warm ink, cream, terracotta.
+ * Screens currently hardcode these values; when touching a screen,
+ * prefer importing from here.
+ */
+export const Brand = {
+  ink: '#1C1916', // dark headers, primary text
+  cream: '#FAF6EF', // page background
+  terracotta: '#D85A30', // buttons, fills, large accents
+  terracottaText: '#B5471F', // links / small accent text (AA on white)
+  terracottaSoft: '#E07B53', // accents on ink surfaces
+  terracottaTint: '#FAECE7', // light tinted fills
+  amber: '#EF9F27', // stars / ratings
+  textSecondary: '#6E675C',
+  textTertiary: '#8A8275',
+  border: '#EDE5D6',
+  cardBg: '#FFFFFF',
+};
+
+const tintColorLight = Brand.terracotta;
 const tintColorDark = '#fff';
 
 export const Colors = {

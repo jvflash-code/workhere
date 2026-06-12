@@ -84,7 +84,7 @@ export default function AdminScreen() {
   const [perkDesc, setPerkDesc] = useState('');
   const [savingPerk, setSavingPerk] = useState(false);
 
-  const AVATAR_COLORS = ['#1A5CFF', '#6C3DE8', '#1D9E75', '#E8472A', '#F59E0B', '#0EA5E9'];
+  const AVATAR_COLORS = ['#D85A30', '#6C3DE8', '#1D9E75', '#E8472A', '#F59E0B', '#0EA5E9'];
 
   const plans = [
     {
@@ -92,7 +92,7 @@ export default function AdminScreen() {
       name: 'Starter',
       monthlyPrice: 0,
       annualPrice: 0,
-      color: '#888',
+      color: '#6E675C',
       badge: null,
       features: [t('starterF1'), t('starterF2'), t('starterF3')],
       limit: t('starterLimit'),
@@ -102,7 +102,7 @@ export default function AdminScreen() {
       name: 'Growth',
       monthlyPrice: 49,
       annualPrice: 39,
-      color: '#1A5CFF',
+      color: '#D85A30',
       badge: t('popular'),
       features: [t('growthF1'), t('growthF2'), t('growthF3'), t('growthF4')],
       limit: t('growthLimit'),
@@ -526,7 +526,7 @@ export default function AdminScreen() {
   if (authLoading) {
     return (
       <View style={styles.gateContainer}>
-        <ActivityIndicator size="large" color="#1A5CFF" />
+        <ActivityIndicator size="large" color="#D85A30" />
       </View>
     );
   }
@@ -535,7 +535,7 @@ export default function AdminScreen() {
   if (!user || profile?.role !== 'employer') {
     return (
       <View style={styles.gateContainer}>
-        <Text style={styles.gateLogo}>Why<Text style={{ color: '#1A5CFF' }}>Work</Text>Here</Text>
+        <Text style={styles.gateLogo}>Why<Text style={{ color: '#D85A30' }}>Work</Text>Here</Text>
         <Text style={styles.gateTitle}>Showcase your company culture</Text>
         <Text style={styles.gateSub}>
           Create a free employer profile so job seekers can hear directly from your team.
@@ -607,7 +607,7 @@ export default function AdminScreen() {
           </View>
 
           {inboxLoading ? (
-            <ActivityIndicator color="#1A5CFF" size="small" style={{ marginVertical: 12 }} />
+            <ActivityIndicator color="#D85A30" size="small" style={{ marginVertical: 12 }} />
           ) : conversations.length === 0 ? (
             <View style={styles.emptyInbox}>
               <Text style={styles.emptyInboxText}>No messages yet. User messages will appear here.</Text>
@@ -615,7 +615,7 @@ export default function AdminScreen() {
           ) : (
             conversations.map((conv) => (
               <TouchableOpacity key={conv.id} style={styles.convRow} onPress={() => openConversation(conv)}>
-                <View style={[styles.convAvatar, { backgroundColor: conv.unread ? '#1A5CFF' : '#888' }]}>
+                <View style={[styles.convAvatar, { backgroundColor: conv.unread ? '#B5471F' : '#6E675C' }]}>
                   <Text style={styles.convAvatarText}>{getInitials(conv.user_email)}</Text>
                 </View>
                 <View style={styles.convInfo}>
@@ -714,7 +714,7 @@ export default function AdminScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>{t('activeTestimonials')}</Text>
           {videosLoading ? (
-            <ActivityIndicator color="#1A5CFF" size="small" style={{ marginVertical: 12 }} />
+            <ActivityIndicator color="#D85A30" size="small" style={{ marginVertical: 12 }} />
           ) : videos.filter((v: VideoItem) => v.status === 'live').length === 0 ? (
             <Text style={styles.emptyInboxText}>No live videos yet. Approve a pending video above.</Text>
           ) : (
@@ -749,7 +749,7 @@ export default function AdminScreen() {
             </TouchableOpacity>
           </View>
           {perksLoading ? (
-            <ActivityIndicator color="#1A5CFF" size="small" style={{ marginVertical: 12 }} />
+            <ActivityIndicator color="#D85A30" size="small" style={{ marginVertical: 12 }} />
           ) : perks.length === 0 ? (
             <TouchableOpacity style={styles.emptyPerksZone} onPress={() => setShowPerksManager(true)}>
               <Text style={styles.emptyPerksIcon}>🎁</Text>
@@ -789,7 +789,7 @@ export default function AdminScreen() {
               <Text style={styles.logoRowTitle}>Company Logo</Text>
               <Text style={styles.logoRowSub}>{logoUploading ? 'Uploading...' : 'Tap to change'}</Text>
             </View>
-            {logoUploading && <ActivityIndicator size="small" color="#1A5CFF" />}
+            {logoUploading && <ActivityIndicator size="small" color="#D85A30" />}
           </TouchableOpacity>
 
           {/* About */}
@@ -797,7 +797,7 @@ export default function AdminScreen() {
           <TextInput
             style={[styles.formInput, styles.formInputMulti]}
             placeholder="Tell job seekers what makes your company a great place to work..."
-            placeholderTextColor="#aaa"
+            placeholderTextColor="#9A9285"
             value={aboutText}
             onChangeText={setAboutText}
             multiline
@@ -887,7 +887,7 @@ export default function AdminScreen() {
               value={perkIcon}
               onChangeText={setPerkIcon}
               placeholder="✨"
-              placeholderTextColor="#aaa"
+              placeholderTextColor="#9A9285"
               maxLength={2}
             />
             <Text style={styles.settingsLabel}>Title *</Text>
@@ -896,7 +896,7 @@ export default function AdminScreen() {
               value={perkTitle}
               onChangeText={setPerkTitle}
               placeholder="e.g. Unlimited PTO"
-              placeholderTextColor="#aaa"
+              placeholderTextColor="#9A9285"
               editable={!savingPerk}
             />
             <Text style={styles.settingsLabel}>Description</Text>
@@ -905,20 +905,20 @@ export default function AdminScreen() {
               value={perkDesc}
               onChangeText={setPerkDesc}
               placeholder="Describe this benefit in detail..."
-              placeholderTextColor="#aaa"
+              placeholderTextColor="#9A9285"
               multiline
               numberOfLines={4}
               editable={!savingPerk}
             />
             {savingPerk ? (
-              <ActivityIndicator color="#1A5CFF" style={{ marginTop: 16 }} />
+              <ActivityIndicator color="#D85A30" style={{ marginTop: 16 }} />
             ) : (
               <>
                 <TouchableOpacity style={styles.saveBtn} onPress={savePerk}>
                   <Text style={styles.saveBtnText}>Save perk</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={{ alignItems: 'center', marginTop: 12 }} onPress={() => setEditingPerk(null)}>
-                  <Text style={{ color: '#aaa', fontSize: 13 }}>Cancel</Text>
+                  <Text style={{ color: '#8A8275', fontSize: 13 }}>Cancel</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -944,7 +944,7 @@ export default function AdminScreen() {
 
             {threadLoading ? (
               <View style={styles.threadLoading}>
-                <ActivityIndicator color="#1A5CFF" />
+                <ActivityIndicator color="#D85A30" />
               </View>
             ) : (
               <ScrollView
@@ -974,7 +974,7 @@ export default function AdminScreen() {
                 value={replyText}
                 onChangeText={setReplyText}
                 placeholder="Type a reply..."
-                placeholderTextColor="#aaa"
+                placeholderTextColor="#9A9285"
                 onSubmitEditing={sendReply}
                 returnKeyType="send"
                 editable={!replying}
@@ -1003,14 +1003,14 @@ export default function AdminScreen() {
             <Text style={styles.modalTitle}>New Employee Video</Text>
             <Text style={styles.modalSub}>Fill in the details for this testimonial.</Text>
 
-            <TextInput style={styles.formInput} placeholder="Employee full name *" placeholderTextColor="#aaa" value={empName} onChangeText={setEmpName} editable={!uploading} />
-            <TextInput style={styles.formInput} placeholder="Job title / role *" placeholderTextColor="#aaa" value={empRole} onChangeText={setEmpRole} editable={!uploading} />
-            <TextInput style={styles.formInput} placeholder="Years at company (e.g. 3 years)" placeholderTextColor="#aaa" value={empYears} onChangeText={setEmpYears} editable={!uploading} />
-            <TextInput style={[styles.formInput, styles.formInputMulti]} placeholder="Short quote from the employee" placeholderTextColor="#aaa" value={videoQuote} onChangeText={setVideoQuote} multiline numberOfLines={3} editable={!uploading} />
+            <TextInput style={styles.formInput} placeholder="Employee full name *" placeholderTextColor="#9A9285" value={empName} onChangeText={setEmpName} editable={!uploading} />
+            <TextInput style={styles.formInput} placeholder="Job title / role *" placeholderTextColor="#9A9285" value={empRole} onChangeText={setEmpRole} editable={!uploading} />
+            <TextInput style={styles.formInput} placeholder="Years at company (e.g. 3 years)" placeholderTextColor="#9A9285" value={empYears} onChangeText={setEmpYears} editable={!uploading} />
+            <TextInput style={[styles.formInput, styles.formInputMulti]} placeholder="Short quote from the employee" placeholderTextColor="#9A9285" value={videoQuote} onChangeText={setVideoQuote} multiline numberOfLines={3} editable={!uploading} />
 
             {uploading ? (
               <View style={styles.uploadingRow}>
-                <ActivityIndicator color="#1A5CFF" />
+                <ActivityIndicator color="#D85A30" />
                 <Text style={styles.uploadingText}>{uploadProgress}</Text>
               </View>
             ) : (
@@ -1100,7 +1100,7 @@ export default function AdminScreen() {
             <TouchableOpacity
               style={[
                 styles.ctaBtn,
-                { backgroundColor: plans.find((p) => p.id === selectedPlan)?.color || '#1A5CFF' },
+                { backgroundColor: plans.find((p) => p.id === selectedPlan)?.color || '#D85A30' },
                 selectedPlan === currentPlan && styles.ctaBtnDisabled,
               ]}
               onPress={confirmUpgrade}
@@ -1126,127 +1126,127 @@ export default function AdminScreen() {
 
 const styles = StyleSheet.create({
   gateContainer: { flex: 1, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center', padding: 36 },
-  gateLogo: { fontSize: 26, fontWeight: '700', color: '#333', marginBottom: 24 },
-  gateTitle: { fontSize: 22, fontWeight: '700', color: '#1a1a1a', textAlign: 'center', marginBottom: 10 },
-  gateSub: { fontSize: 14, color: '#888', textAlign: 'center', lineHeight: 21, marginBottom: 32 },
-  gateBtn: { backgroundColor: '#1A5CFF', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32 },
+  gateLogo: { fontSize: 26, fontWeight: '700', color: '#26221C', marginBottom: 24 },
+  gateTitle: { fontSize: 22, fontWeight: '700', color: '#1C1916', textAlign: 'center', marginBottom: 10 },
+  gateSub: { fontSize: 14, color: '#6E675C', textAlign: 'center', lineHeight: 21, marginBottom: 32 },
+  gateBtn: { backgroundColor: '#D85A30', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32 },
   gateBtnText: { color: 'white', fontSize: 15, fontWeight: '700' },
   gateSecondaryBtn: { marginTop: 16 },
-  gateSecondaryBtnText: { color: '#1A5CFF', fontSize: 13, fontWeight: '600' },
+  gateSecondaryBtnText: { color: '#B5471F', fontSize: 13, fontWeight: '600' },
   sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  sectionAction: { color: '#1A5CFF', fontSize: 13, fontWeight: '600' },
-  emptyPerksZone: { borderWidth: 1.5, borderColor: '#E5E7EB', borderStyle: 'dashed', borderRadius: 10, padding: 20, alignItems: 'center' },
+  sectionAction: { color: '#B5471F', fontSize: 13, fontWeight: '600' },
+  emptyPerksZone: { borderWidth: 1.5, borderColor: '#E5DECF', borderStyle: 'dashed', borderRadius: 10, padding: 20, alignItems: 'center' },
   emptyPerksIcon: { fontSize: 28, marginBottom: 8 },
-  emptyPerksTitle: { fontSize: 15, fontWeight: '600', color: '#333', marginBottom: 4 },
-  emptyPerksSub: { fontSize: 13, color: '#888', textAlign: 'center' },
-  perkRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
+  emptyPerksTitle: { fontSize: 15, fontWeight: '600', color: '#26221C', marginBottom: 4 },
+  emptyPerksSub: { fontSize: 13, color: '#6E675C', textAlign: 'center' },
+  perkRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F1EBDE' },
   perkRowIcon: { fontSize: 20, marginRight: 12 },
   perkRowInfo: { flex: 1 },
-  perkRowTitle: { fontSize: 14, fontWeight: '600', color: '#1a1a1a' },
-  perkRowDesc: { fontSize: 12, color: '#888', marginTop: 2 },
-  perkRowBtn: { paddingHorizontal: 10, paddingVertical: 4, backgroundColor: '#F0F4FF', borderRadius: 6 },
-  perkRowBtnText: { color: '#1A5CFF', fontSize: 12, fontWeight: '600' },
-  managePerkRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
+  perkRowTitle: { fontSize: 14, fontWeight: '600', color: '#1C1916' },
+  perkRowDesc: { fontSize: 13, color: '#6E675C', marginTop: 2 },
+  perkRowBtn: { paddingHorizontal: 10, paddingVertical: 4, backgroundColor: '#FAECE7', borderRadius: 6 },
+  perkRowBtnText: { color: '#B5471F', fontSize: 13, fontWeight: '600' },
+  managePerkRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F1EBDE' },
   managePerkIcon: { fontSize: 20, marginRight: 10 },
   managePerkInfo: { flex: 1 },
-  managePerkTitle: { fontSize: 14, fontWeight: '600', color: '#1a1a1a' },
-  perkEditBtn: { paddingHorizontal: 10, paddingVertical: 4, backgroundColor: '#F0F4FF', borderRadius: 6, marginRight: 6 },
-  perkEditBtnText: { color: '#1A5CFF', fontSize: 12, fontWeight: '600' },
+  managePerkTitle: { fontSize: 14, fontWeight: '600', color: '#1C1916' },
+  perkEditBtn: { paddingHorizontal: 10, paddingVertical: 4, backgroundColor: '#FAECE7', borderRadius: 6, marginRight: 6 },
+  perkEditBtnText: { color: '#B5471F', fontSize: 13, fontWeight: '600' },
   perkDeleteBtn: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#FEE2E2', alignItems: 'center', justifyContent: 'center' },
-  perkDeleteBtnText: { color: '#EF4444', fontSize: 12, fontWeight: '700' },
-  perkDivider: { height: 1, backgroundColor: '#E5E7EB', marginVertical: 16 },
-  templateSectionLabel: { fontSize: 12, fontWeight: '600', color: '#888', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
+  perkDeleteBtnText: { color: '#EF4444', fontSize: 13, fontWeight: '700' },
+  perkDivider: { height: 1, backgroundColor: '#E5DECF', marginVertical: 16 },
+  templateSectionLabel: { fontSize: 13, fontWeight: '600', color: '#6E675C', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
   templateRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F9FAFB' },
   templateIcon: { fontSize: 18, marginRight: 10 },
-  templateTitle: { flex: 1, fontSize: 14, color: '#333' },
-  templateAdd: { color: '#1A5CFF', fontSize: 13, fontWeight: '600' },
-  addCustomBtn: { marginTop: 16, borderWidth: 1.5, borderColor: '#1A5CFF', borderRadius: 10, padding: 14, alignItems: 'center' },
-  addCustomBtnText: { color: '#1A5CFF', fontWeight: '600', fontSize: 14 },
-  logoRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 12, padding: 14, marginBottom: 16, gap: 14 },
+  templateTitle: { flex: 1, fontSize: 14, color: '#26221C' },
+  templateAdd: { color: '#B5471F', fontSize: 13, fontWeight: '600' },
+  addCustomBtn: { marginTop: 16, borderWidth: 1.5, borderColor: '#D85A30', borderRadius: 10, padding: 14, alignItems: 'center' },
+  addCustomBtnText: { color: '#B5471F', fontWeight: '600', fontSize: 14 },
+  logoRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 12, padding: 14, marginBottom: 16, gap: 14, borderWidth: 1, borderColor: '#EDE5D6' },
   logoPreview: { width: 52, height: 52, borderRadius: 10 },
-  logoPlaceholder: { width: 52, height: 52, borderRadius: 10, backgroundColor: '#EEF3FF', alignItems: 'center', justifyContent: 'center' },
-  logoPlaceholderText: { fontSize: 22, fontWeight: '700', color: '#1A5CFF' },
+  logoPlaceholder: { width: 52, height: 52, borderRadius: 10, backgroundColor: '#FAECE7', alignItems: 'center', justifyContent: 'center' },
+  logoPlaceholderText: { fontSize: 22, fontWeight: '700', color: '#D85A30' },
   logoRowInfo: { flex: 1 },
-  logoRowTitle: { fontSize: 14, fontWeight: '600', color: '#333' },
-  logoRowSub: { fontSize: 12, color: '#888', marginTop: 2 },
-  settingsLabel: { fontSize: 12, fontWeight: '600', color: '#888', marginBottom: 6, textTransform: 'uppercase' },
-  saveBtn: { backgroundColor: '#1A5CFF', borderRadius: 10, padding: 12, alignItems: 'center', marginTop: 4 },
-  saveBtnDisabled: { backgroundColor: '#7BA7FF' },
+  logoRowTitle: { fontSize: 14, fontWeight: '600', color: '#26221C' },
+  logoRowSub: { fontSize: 13, color: '#6E675C', marginTop: 2 },
+  settingsLabel: { fontSize: 13, fontWeight: '600', color: '#6E675C', marginBottom: 6, textTransform: 'uppercase' },
+  saveBtn: { backgroundColor: '#D85A30', borderRadius: 10, padding: 12, alignItems: 'center', marginTop: 4 },
+  saveBtnDisabled: { backgroundColor: '#E07B53' },
   saveBtnText: { color: 'white', fontSize: 14, fontWeight: '600' },
   root: { flex: 1 },
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  header: { backgroundColor: '#1A5CFF', padding: 24, paddingTop: 60 },
+  container: { flex: 1, backgroundColor: '#FAF6EF' },
+  header: { backgroundColor: '#1C1916', padding: 24, paddingTop: 60 },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  label: { fontSize: 11, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: 0.8 },
+  label: { fontSize: 12, color: 'rgba(255,255,255,0.78)', textTransform: 'uppercase', letterSpacing: 0.8 },
   title: { fontSize: 20, fontWeight: '700', color: 'white', marginTop: 4 },
   // Inbox styles
-  inboxSection: { backgroundColor: 'white', marginBottom: 0, borderBottomWidth: 0.5, borderBottomColor: '#eee' },
+  inboxSection: { backgroundColor: 'white', marginBottom: 0, borderBottomWidth: 0.5, borderBottomColor: '#EDE7D9' },
   inboxHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, paddingBottom: 8 },
-  inboxTitle: { fontSize: 15, fontWeight: '700', color: '#333' },
+  inboxTitle: { fontSize: 15, fontWeight: '700', color: '#26221C' },
   refreshBtn: { paddingHorizontal: 10, paddingVertical: 4 },
-  refreshText: { fontSize: 12, color: '#1A5CFF', fontWeight: '600' },
+  refreshText: { fontSize: 13, color: '#B5471F', fontWeight: '600' },
   emptyInbox: { padding: 16, paddingTop: 8, paddingBottom: 20 },
-  emptyInboxText: { fontSize: 13, color: '#aaa', textAlign: 'center' },
-  convRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: 0.5, borderTopColor: '#f0f0f0', gap: 12 },
+  emptyInboxText: { fontSize: 13, color: '#8A8275', textAlign: 'center' },
+  convRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: 0.5, borderTopColor: '#F1EBDE', gap: 12 },
   convAvatar: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   convAvatarText: { color: 'white', fontWeight: '700', fontSize: 13 },
   convInfo: { flex: 1, minWidth: 0 },
-  convEmail: { fontSize: 13, fontWeight: '600', color: '#333' },
-  convPreview: { fontSize: 12, color: '#888', marginTop: 2 },
+  convEmail: { fontSize: 13, fontWeight: '600', color: '#26221C' },
+  convPreview: { fontSize: 13, color: '#6E675C', marginTop: 2 },
   convMeta: { alignItems: 'flex-end', gap: 4 },
-  convTime: { fontSize: 11, color: '#aaa' },
-  unreadDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#1A5CFF' },
+  convTime: { fontSize: 12, color: '#8A8275' },
+  unreadDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#D85A30' },
   // Reply modal
   replyModal: { backgroundColor: 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, height: '85%', flexDirection: 'column' },
   replyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 12 },
-  replyTitle: { fontSize: 16, fontWeight: '700', color: '#333' },
-  closeBtn: { fontSize: 14, color: '#1A5CFF', fontWeight: '600' },
+  replyTitle: { fontSize: 16, fontWeight: '700', color: '#26221C' },
+  closeBtn: { fontSize: 14, color: '#B5471F', fontWeight: '600' },
   threadLoading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   threadArea: { flex: 1 },
   threadContent: { padding: 16, gap: 8 },
-  replyBar: { flexDirection: 'row', padding: 12, gap: 8, borderTopWidth: 0.5, borderTopColor: '#eee', backgroundColor: 'white' },
-  replyInput: { flex: 1, backgroundColor: '#f5f5f5', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, fontSize: 13, color: '#333', maxHeight: 80 },
-  msgTime: { fontSize: 10, color: '#ccc', marginTop: 2 },
+  replyBar: { flexDirection: 'row', padding: 12, gap: 8, borderTopWidth: 0.5, borderTopColor: '#EDE7D9', backgroundColor: 'white' },
+  replyInput: { flex: 1, backgroundColor: '#FAF6EF', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, fontSize: 13, color: '#26221C', maxHeight: 80 },
+  msgTime: { fontSize: 11, color: '#C9C2B3', marginTop: 2 },
   // Shared chat bubble styles (duplicated for use in reply modal)
   themWrapper: { alignItems: 'flex-start', marginBottom: 8 },
   meWrapper: { alignItems: 'flex-end', marginBottom: 8 },
-  senderName: { fontSize: 11, color: '#888', marginBottom: 3 },
+  senderName: { fontSize: 12, color: '#6E675C', marginBottom: 3 },
   bubble: { maxWidth: '80%', padding: 10, borderRadius: 14 },
-  themBubble: { backgroundColor: '#f0f0f0', borderBottomLeftRadius: 4 },
-  meBubble: { backgroundColor: '#1A5CFF', borderBottomRightRadius: 4 },
+  themBubble: { backgroundColor: '#F1EBDE', borderBottomLeftRadius: 4 },
+  meBubble: { backgroundColor: '#D85A30', borderBottomRightRadius: 4 },
   bubbleText: { fontSize: 13, lineHeight: 20 },
-  themText: { color: '#333' },
+  themText: { color: '#26221C' },
   meText: { color: 'white' },
-  sendBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#1A5CFF', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-end' },
-  sendBtnDisabled: { backgroundColor: '#7BA7FF' },
-  sendIcon: { color: 'white', fontSize: 12, marginLeft: 2 },
-  metricsRow: { flexDirection: 'row', backgroundColor: 'white', borderBottomWidth: 0.5, borderBottomColor: '#eee' },
-  metric: { flex: 1, padding: 14, alignItems: 'center', borderRightWidth: 0.5, borderRightColor: '#eee' },
-  metricVal: { fontSize: 20, fontWeight: '700', color: '#1A5CFF' },
-  metricLbl: { fontSize: 10, color: '#888', marginTop: 2 },
+  sendBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#D85A30', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-end' },
+  sendBtnDisabled: { backgroundColor: '#E07B53' },
+  sendIcon: { color: 'white', fontSize: 13, marginLeft: 2 },
+  metricsRow: { flexDirection: 'row', backgroundColor: 'white', borderBottomWidth: 0.5, borderBottomColor: '#EDE7D9' },
+  metric: { flex: 1, padding: 14, alignItems: 'center', borderRightWidth: 0.5, borderRightColor: '#EDE7D9' },
+  metricVal: { fontSize: 20, fontWeight: '700', color: '#D85A30' },
+  metricLbl: { fontSize: 11, color: '#6E675C', marginTop: 2 },
   section: { padding: 16, paddingBottom: 0 },
-  sectionLabel: { fontSize: 13, fontWeight: '600', color: '#333', marginBottom: 10 },
-  uploadZone: { borderWidth: 1.5, borderColor: '#ddd', borderStyle: 'dashed', borderRadius: 12, padding: 24, alignItems: 'center' },
+  sectionLabel: { fontSize: 13, fontWeight: '600', color: '#26221C', marginBottom: 10 },
+  uploadZone: { borderWidth: 1.5, borderColor: '#E5DECF', borderStyle: 'dashed', borderRadius: 12, padding: 24, alignItems: 'center' },
   recordBtn: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#fff0f0', borderWidth: 2.5, borderColor: '#ff3b30', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
   recordDot: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#ff3b30' },
-  uploadText: { fontSize: 13, fontWeight: '600', color: '#1A5CFF' },
-  uploadSub: { fontSize: 11, color: '#888', marginTop: 2 },
-  lockedZone: { borderWidth: 1.5, borderColor: '#eee', borderStyle: 'dashed', borderRadius: 12, padding: 24, alignItems: 'center', backgroundColor: '#fafafa' },
+  uploadText: { fontSize: 13, fontWeight: '600', color: '#B5471F' },
+  uploadSub: { fontSize: 12, color: '#6E675C', marginTop: 2 },
+  lockedZone: { borderWidth: 1.5, borderColor: '#EDE7D9', borderStyle: 'dashed', borderRadius: 12, padding: 24, alignItems: 'center', backgroundColor: '#fafafa' },
   lockIcon: { fontSize: 28, marginBottom: 6 },
-  lockedTitle: { fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 4 },
-  lockedSub: { fontSize: 12, color: '#888', textAlign: 'center', marginBottom: 12 },
-  upgradeInlineBtn: { backgroundColor: '#1A5CFF', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20 },
+  lockedTitle: { fontSize: 14, fontWeight: '600', color: '#26221C', marginBottom: 4 },
+  lockedSub: { fontSize: 13, color: '#6E675C', textAlign: 'center', marginBottom: 12 },
+  upgradeInlineBtn: { backgroundColor: '#D85A30', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20 },
   upgradeInlineBtnText: { color: 'white', fontSize: 13, fontWeight: '600' },
-  videoRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 10, padding: 12, marginBottom: 8, gap: 10 },
+  videoRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 12, padding: 12, marginBottom: 8, gap: 10, borderWidth: 1, borderColor: '#EDE5D6' },
   avatar: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: 'white', fontWeight: '700', fontSize: 13 },
   videoInfo: { flex: 1 },
-  videoName: { fontSize: 13, fontWeight: '600', color: '#333' },
-  videoMeta: { fontSize: 11, color: '#888', marginTop: 2 },
+  videoName: { fontSize: 13, fontWeight: '600', color: '#26221C' },
+  videoMeta: { fontSize: 12, color: '#6E675C', marginTop: 2 },
   statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   statusLive: { backgroundColor: '#E1F5EE' },
   statusPending: { backgroundColor: '#FAEEDA' },
-  statusText: { fontSize: 11, fontWeight: '600' },
+  statusText: { fontSize: 12, fontWeight: '600' },
   statusLiveText: { color: '#1D9E75' },
   statusPendingText: { color: '#BA7517' },
   moderationBtns: { flexDirection: 'row', gap: 8 },
@@ -1254,46 +1254,46 @@ const styles = StyleSheet.create({
   approveBtnText: { color: '#1D9E75', fontSize: 14, fontWeight: '700' },
   rejectBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#FDECEA', alignItems: 'center', justifyContent: 'center' },
   rejectBtnText: { color: '#E8472A', fontSize: 14, fontWeight: '700' },
-  subCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'white', borderRadius: 12, padding: 14, marginBottom: 16 },
-  subPlan: { fontSize: 14, fontWeight: '600', color: '#333' },
-  subDetail: { fontSize: 11, color: '#888', marginTop: 2 },
-  upgradeBtn: { backgroundColor: '#1A5CFF', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
+  subCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'white', borderRadius: 12, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: '#EDE5D6' },
+  subPlan: { fontSize: 14, fontWeight: '600', color: '#26221C' },
+  subDetail: { fontSize: 12, color: '#6E675C', marginTop: 2 },
+  upgradeBtn: { backgroundColor: '#D85A30', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
   upgradeBtnDisabled: { backgroundColor: '#E1F5EE' },
   upgradeBtnText: { color: 'white', fontSize: 13, fontWeight: '600' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   modalSheet: { backgroundColor: 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 48 },
-  modalHandle: { width: 36, height: 4, backgroundColor: '#ddd', borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
-  modalTitle: { fontSize: 20, fontWeight: '700', color: '#333', textAlign: 'center' },
-  modalSub: { fontSize: 13, color: '#888', textAlign: 'center', marginTop: 6, marginBottom: 16 },
-  toggleRow: { flexDirection: 'row', backgroundColor: '#f0f0f0', borderRadius: 12, padding: 4, marginBottom: 16 },
+  modalHandle: { width: 36, height: 4, backgroundColor: '#E5DECF', borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
+  modalTitle: { fontSize: 20, fontWeight: '700', color: '#26221C', textAlign: 'center' },
+  modalSub: { fontSize: 13, color: '#6E675C', textAlign: 'center', marginTop: 6, marginBottom: 16 },
+  toggleRow: { flexDirection: 'row', backgroundColor: '#F1EBDE', borderRadius: 12, padding: 4, marginBottom: 16 },
   toggleOption: { flex: 1, paddingVertical: 8, borderRadius: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 },
   toggleActive: { backgroundColor: 'white' },
-  toggleText: { fontSize: 13, fontWeight: '600', color: '#888' },
-  toggleActiveText: { color: '#333' },
+  toggleText: { fontSize: 13, fontWeight: '600', color: '#6E675C' },
+  toggleActiveText: { color: '#26221C' },
   saveBadge: { backgroundColor: '#1D9E75', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
   saveBadgeText: { color: 'white', fontSize: 9, fontWeight: '700' },
-  planCard: { borderWidth: 1.5, borderColor: '#eee', borderRadius: 14, padding: 14, marginBottom: 10 },
+  planCard: { borderWidth: 1.5, borderColor: '#EDE7D9', borderRadius: 14, padding: 14, marginBottom: 10 },
   planCardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
   planNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 },
   planName: { fontSize: 16, fontWeight: '700' },
   planBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
-  planBadgeText: { color: 'white', fontSize: 10, fontWeight: '700' },
-  currentBadge: { backgroundColor: '#f0f0f0', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
-  currentBadgeText: { color: '#888', fontSize: 10, fontWeight: '600' },
-  planPrice: { fontSize: 18, fontWeight: '700', color: '#333' },
-  planPriceSub: { fontSize: 11, fontWeight: '400', color: '#888' },
-  radioOuter: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: '#ddd', alignItems: 'center', justifyContent: 'center' },
+  planBadgeText: { color: 'white', fontSize: 11, fontWeight: '700' },
+  currentBadge: { backgroundColor: '#F1EBDE', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
+  currentBadgeText: { color: '#6E675C', fontSize: 11, fontWeight: '600' },
+  planPrice: { fontSize: 18, fontWeight: '700', color: '#26221C' },
+  planPriceSub: { fontSize: 12, fontWeight: '400', color: '#6E675C' },
+  radioOuter: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: '#E5DECF', alignItems: 'center', justifyContent: 'center' },
   radioInner: { width: 10, height: 10, borderRadius: 5 },
   featureRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
-  featureCheck: { fontSize: 12, fontWeight: '700' },
-  featureText: { fontSize: 12, color: '#555' },
-  ctaBtn: { padding: 16, borderRadius: 14, alignItems: 'center', marginTop: 8, backgroundColor: '#1A5CFF' },
-  ctaBtnDisabled: { backgroundColor: '#ccc' },
+  featureCheck: { fontSize: 13, fontWeight: '700' },
+  featureText: { fontSize: 13, color: '#5C564C' },
+  ctaBtn: { padding: 16, borderRadius: 14, alignItems: 'center', marginTop: 8, backgroundColor: '#D85A30' },
+  ctaBtnDisabled: { backgroundColor: '#C9C2B3' },
   ctaBtnText: { color: 'white', fontSize: 15, fontWeight: '700' },
   dismissBtn: { alignItems: 'center', marginTop: 14 },
-  dismissText: { fontSize: 13, color: '#aaa' },
-  formInput: { width: '100%', backgroundColor: '#f5f5f5', borderRadius: 10, padding: 13, fontSize: 14, color: '#333', marginBottom: 10 },
+  dismissText: { fontSize: 13, color: '#8A8275' },
+  formInput: { width: '100%', backgroundColor: '#FAF6EF', borderRadius: 10, padding: 13, fontSize: 14, color: '#26221C', marginBottom: 10 },
   formInputMulti: { height: 80, textAlignVertical: 'top' },
   uploadingRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 },
-  uploadingText: { fontSize: 13, color: '#888' },
+  uploadingText: { fontSize: 13, color: '#6E675C' },
 });

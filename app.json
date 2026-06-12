@@ -46,9 +46,9 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#1A5CFF",
+          "backgroundColor": "#FAF6EF",
           "dark": {
-            "backgroundColor": "#1A5CFF"
+            "backgroundColor": "#FAF6EF"
           }
         }
       ],
@@ -56,7 +56,7 @@
         "expo-notifications",
         {
           "icon": "./assets/images/icon.png",
-          "color": "#1A5CFF",
+          "color": "#D85A30",
           "sounds": []
         }
       ],

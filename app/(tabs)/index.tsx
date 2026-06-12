@@ -28,12 +28,11 @@ export default function HomeScreen() {
             <Text style={styles.logo}>WhyWork<Text style={styles.logoAccent}>Here</Text></Text>
             <LangToggle />
           </View>
-          <Text style={styles.headerSub}>{t('tagline')}</Text>
         </View>
 
         <View style={styles.companyCard}>
           {loading ? (
-            <ActivityIndicator color="white" size="large" style={styles.loader} />
+            <ActivityIndicator color="#D85A30" size="large" style={styles.loader} />
           ) : (
             <>
               {company?.logo_url ? (
@@ -55,7 +54,7 @@ export default function HomeScreen() {
                   <Text style={styles.statLbl}>{t('employees')}</Text>
                 </View>
                 <View style={styles.statItem}>
-                  <Text style={styles.statNum}>
+                  <Text style={[styles.statNum, styles.statNumRating]}>
                     {company?.rating != null ? `${company.rating}★` : '—'}
                   </Text>
                   <Text style={styles.statLbl}>{t('rating')}</Text>
@@ -138,45 +137,45 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  header: { backgroundColor: '#1A5CFF', padding: 24, paddingTop: 60 },
-  headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  logo: { fontSize: 28, fontWeight: '700', color: 'white' },
-  logoAccent: { color: '#7BB3FF' },
-  headerSub: { fontSize: 14, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
-  companyCard: { backgroundColor: '#1A5CFF', padding: 20, paddingTop: 0, paddingBottom: 24 },
+  container: { flex: 1, backgroundColor: '#FAF6EF' },
+  header: { backgroundColor: '#1C1916', paddingHorizontal: 20, paddingTop: 56, paddingBottom: 40 },
+  headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  logo: { fontSize: 20, fontWeight: '700', color: 'white' },
+  logoAccent: { color: '#E07B53' },
+  companyCard: { backgroundColor: 'white', borderRadius: 16, borderWidth: 1, borderColor: '#EDE5D6', padding: 20, marginHorizontal: 16, marginTop: -24, marginBottom: 8 },
   loader: { paddingVertical: 32 },
-  companyLogo: { width: 56, height: 56, borderRadius: 12, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
-  companyLogoImg: { width: 56, height: 56, borderRadius: 12, marginBottom: 10, backgroundColor: 'white' },
-  companyLogoText: { fontSize: 24, fontWeight: '700', color: '#1A5CFF' },
-  companyName: { fontSize: 22, fontWeight: '700', color: 'white', marginBottom: 2 },
-  companyTagline: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginBottom: 16 },
-  statsRow: { flexDirection: 'row', gap: 24 },
-  statItem: { alignItems: 'center' },
-  statNum: { fontSize: 20, fontWeight: '700', color: 'white' },
-  statLbl: { fontSize: 10, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase' },
-  surveyNote: { fontSize: 10, color: 'rgba(255,255,255,0.5)', marginTop: 12 },
-  sectionLabel: { fontSize: 13, fontWeight: '600', color: '#333', margin: 16, marginBottom: 8 },
+  companyLogo: { width: 64, height: 64, borderRadius: 14, backgroundColor: '#FAF6EF', borderWidth: 1, borderColor: '#EDE5D6', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  companyLogoImg: { width: 64, height: 64, borderRadius: 14, marginBottom: 12, backgroundColor: '#FAF6EF', borderWidth: 1, borderColor: '#EDE5D6' },
+  companyLogoText: { fontSize: 26, fontWeight: '700', color: '#D85A30' },
+  companyName: { fontSize: 24, fontWeight: '700', color: '#1C1916', marginBottom: 2 },
+  companyTagline: { fontSize: 14, color: '#6E675C', marginBottom: 18 },
+  statsRow: { flexDirection: 'row', gap: 28 },
+  statItem: { alignItems: 'flex-start' },
+  statNum: { fontSize: 20, fontWeight: '700', color: '#1C1916' },
+  statNumRating: { color: '#BA7517' },
+  statLbl: { fontSize: 11, color: '#8A8275', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 },
+  surveyNote: { fontSize: 11, color: '#8A8275', marginTop: 14 },
+  sectionLabel: { fontSize: 13, fontWeight: '600', color: '#26221C', margin: 16, marginBottom: 8 },
   perksGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, gap: 8 },
-  perkCard: { backgroundColor: 'white', borderRadius: 10, padding: 12, width: '47%' },
+  perkCard: { backgroundColor: 'white', borderRadius: 12, padding: 14, width: '47%', borderWidth: 1, borderColor: '#EDE5D6' },
   perkIcon: { fontSize: 20, marginBottom: 4 },
-  perkTitle: { fontSize: 12, fontWeight: '600', color: '#333' },
-  perkDesc: { fontSize: 11, color: '#888', marginTop: 2, lineHeight: 15 },
-  perkMore: { fontSize: 10, color: '#1A5CFF', marginTop: 6, fontWeight: '600' },
-  aboutCard: { backgroundColor: 'white', borderRadius: 12, padding: 16, marginHorizontal: 16, marginBottom: 8 },
-  aboutText: { fontSize: 14, color: '#444', lineHeight: 22 },
-  ctaBtn: { backgroundColor: '#1A5CFF', margin: 16, padding: 16, borderRadius: 12, alignItems: 'center' },
+  perkTitle: { fontSize: 13, fontWeight: '600', color: '#26221C' },
+  perkDesc: { fontSize: 12, color: '#6E675C', marginTop: 2, lineHeight: 15 },
+  perkMore: { fontSize: 11, color: '#B5471F', marginTop: 6, fontWeight: '600' },
+  aboutCard: { backgroundColor: 'white', borderRadius: 12, padding: 16, marginHorizontal: 16, marginBottom: 8, borderWidth: 1, borderColor: '#EDE5D6' },
+  aboutText: { fontSize: 14, color: '#3D382F', lineHeight: 22 },
+  ctaBtn: { backgroundColor: '#D85A30', margin: 16, padding: 16, borderRadius: 12, alignItems: 'center' },
   ctaBtnText: { color: 'white', fontSize: 15, fontWeight: '600' },
-  searchBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, margin: 16, marginTop: 4, marginBottom: 32, padding: 14, borderRadius: 12, borderWidth: 1.5, borderColor: '#1A5CFF', backgroundColor: 'white' },
+  searchBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, margin: 16, marginTop: 4, marginBottom: 32, padding: 14, borderRadius: 12, borderWidth: 1.5, borderColor: '#D85A30', backgroundColor: 'white' },
   searchBtnIcon: { fontSize: 16 },
-  searchBtnText: { color: '#1A5CFF', fontSize: 15, fontWeight: '600' },
+  searchBtnText: { color: '#B5471F', fontSize: 15, fontWeight: '600' },
   // Perk detail modal
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   detailSheet: { backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 28, paddingBottom: 44 },
-  modalHandle: { width: 36, height: 4, backgroundColor: '#ddd', borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
+  modalHandle: { width: 36, height: 4, backgroundColor: '#E5DECF', borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
   detailIcon: { fontSize: 44, marginBottom: 12 },
-  detailTitle: { fontSize: 20, fontWeight: '700', color: '#1a1a1a', marginBottom: 10 },
-  detailDesc: { fontSize: 15, color: '#555', lineHeight: 24 },
-  detailClose: { marginTop: 28, backgroundColor: '#1A5CFF', borderRadius: 12, padding: 14, alignItems: 'center' },
+  detailTitle: { fontSize: 20, fontWeight: '700', color: '#1C1916', marginBottom: 10 },
+  detailDesc: { fontSize: 15, color: '#5C564C', lineHeight: 24 },
+  detailClose: { marginTop: 28, backgroundColor: '#D85A30', borderRadius: 12, padding: 14, alignItems: 'center' },
   detailCloseText: { color: 'white', fontWeight: '600', fontSize: 15 },
 });

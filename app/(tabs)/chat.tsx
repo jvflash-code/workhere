@@ -333,7 +333,7 @@ export default function ChatScreen() {
       {/* Loading state */}
       {loading ? (
         <View style={styles.loadingArea}>
-          <ActivityIndicator size="large" color="#1A5CFF" />
+          <ActivityIndicator size="large" color="#D85A30" />
         </View>
       ) : (
         <>
@@ -389,7 +389,7 @@ export default function ChatScreen() {
               value={input}
               onChangeText={setInput}
               placeholder={t('chatPlaceholder')}
-              placeholderTextColor="#aaa"
+              placeholderTextColor="#9A9285"
               onSubmitEditing={sendMessage}
               returnKeyType="send"
               editable={!sending}
@@ -412,43 +412,43 @@ export default function ChatScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  header: { backgroundColor: '#1A5CFF', padding: 24, paddingTop: 60 },
+  container: { flex: 1, backgroundColor: '#FAF6EF' },
+  header: { backgroundColor: '#1C1916', padding: 24, paddingTop: 60 },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   title: { fontSize: 20, fontWeight: '700', color: 'white' },
-  sub: { fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 3 },
-  langBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', padding: 10, paddingHorizontal: 16, gap: 8, borderBottomWidth: 0.5, borderBottomColor: '#eee' },
+  sub: { fontSize: 13, color: 'rgba(255,255,255,0.88)', marginTop: 3 },
+  langBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', padding: 10, paddingHorizontal: 16, gap: 8, borderBottomWidth: 0.5, borderBottomColor: '#EDE7D9' },
   langPill: { backgroundColor: '#E8EFFE', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20 },
-  langText: { color: '#1A5CFF', fontSize: 12, fontWeight: '600' },
-  langArrow: { fontSize: 16, color: '#888' },
-  langNote: { fontSize: 11, color: '#888', marginLeft: 4 },
+  langText: { color: '#B5471F', fontSize: 13, fontWeight: '600' },
+  langArrow: { fontSize: 16, color: '#6E675C' },
+  langNote: { fontSize: 12, color: '#6E675C', marginLeft: 4 },
   loadingArea: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   chatArea: { flex: 1 },
   chatContent: { padding: 16, gap: 12 },
   themWrapper: { alignItems: 'flex-start', marginBottom: 8 },
   meWrapper: { alignItems: 'flex-end', marginBottom: 8 },
-  senderName: { fontSize: 11, color: '#888', marginBottom: 3 },
+  senderName: { fontSize: 12, color: '#6E675C', marginBottom: 3 },
   bubble: { maxWidth: '80%', padding: 10, borderRadius: 14 },
   themBubble: { backgroundColor: 'white', borderBottomLeftRadius: 4 },
-  meBubble: { backgroundColor: '#1A5CFF', borderBottomRightRadius: 4 },
+  meBubble: { backgroundColor: '#D85A30', borderBottomRightRadius: 4 },
   bubbleText: { fontSize: 13, lineHeight: 20 },
-  themText: { color: '#333' },
+  themText: { color: '#26221C' },
   meText: { color: 'white' },
   waitingBubble: { flexDirection: 'row', alignItems: 'center' },
-  waitingText: { color: '#999', fontStyle: 'italic', flex: 1 },
+  waitingText: { color: '#857D70', fontStyle: 'italic', flex: 1 },
   translatingRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
-  translatingText: { fontSize: 10, color: '#1D9E75' },
+  translatingText: { fontSize: 11, color: '#1D9E75' },
   translatedTag: { backgroundColor: '#E1F5EE', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginTop: 4, maxWidth: '80%' },
-  translatedText: { fontSize: 11, color: '#1D9E75', lineHeight: 16 },
-  inputBar: { flexDirection: 'row', padding: 12, gap: 8, backgroundColor: 'white', borderTopWidth: 0.5, borderTopColor: '#eee' },
-  input: { flex: 1, backgroundColor: '#f5f5f5', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, fontSize: 13, color: '#333' },
-  sendBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#1A5CFF', alignItems: 'center', justifyContent: 'center' },
-  sendBtnDisabled: { backgroundColor: '#7BA7FF' },
-  sendIcon: { color: 'white', fontSize: 12, marginLeft: 2 },
+  translatedText: { fontSize: 12, color: '#1D9E75', lineHeight: 16 },
+  inputBar: { flexDirection: 'row', padding: 12, gap: 8, backgroundColor: 'white', borderTopWidth: 0.5, borderTopColor: '#EDE7D9' },
+  input: { flex: 1, backgroundColor: '#FAF6EF', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, fontSize: 13, color: '#26221C' },
+  sendBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#D85A30', alignItems: 'center', justifyContent: 'center' },
+  sendBtnDisabled: { backgroundColor: '#E07B53' },
+  sendIcon: { color: 'white', fontSize: 13, marginLeft: 2 },
   guestArea: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
   lockIcon: { fontSize: 48, marginBottom: 16 },
-  guestTitle: { fontSize: 18, fontWeight: '700', color: '#333', textAlign: 'center', marginBottom: 8 },
-  guestSub: { fontSize: 14, color: '#888', textAlign: 'center', lineHeight: 20, marginBottom: 28 },
-  signInBtn: { backgroundColor: '#1A5CFF', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 40 },
+  guestTitle: { fontSize: 18, fontWeight: '700', color: '#26221C', textAlign: 'center', marginBottom: 8 },
+  guestSub: { fontSize: 14, color: '#6E675C', textAlign: 'center', lineHeight: 20, marginBottom: 28 },
+  signInBtn: { backgroundColor: '#D85A30', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 40 },
   signInBtnText: { color: 'white', fontSize: 15, fontWeight: '600' },
 });

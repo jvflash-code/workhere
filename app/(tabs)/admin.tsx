@@ -1,4 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
+import * as ExpoLocation from 'expo-location';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import EmployerOnboarding from '../../components/EmployerOnboarding';
@@ -60,6 +61,8 @@ export default function AdminScreen() {
   // Company settings state
   const [aboutText, setAboutText] = useState('');
   const [savingAbout, setSavingAbout] = useState(false);
+  const [addressText, setAddressText] = useState('');
+  const [savingAddress, setSavingAddress] = useState(false);
   const [logoUploading, setLogoUploading] = useState(false);
 
   // Upload flow state
@@ -133,6 +136,7 @@ export default function AdminScreen() {
   // Pre-fill about text when company loads
   useEffect(() => {
     if (company?.about) setAboutText(company.about);
+    if (company?.address) setAddressText(company.address);
   }, [company]);
 
   // Load subscription plan from DB
@@ -326,6 +330,29 @@ export default function AdminScreen() {
       .eq('id', effectiveCompanyId!);
     setSavingAbout(false);
     if (error) Alert.alert('Error', error.message);
+  }
+
+  async function saveAddress() {
+    const address = addressText.trim();
+    if (!address) return;
+    setSavingAddress(true);
+    try {
+      const results = await ExpoLocation.geocodeAsync(address);
+      if (!results.length) {
+        Alert.alert('Error', t('addressNotFound'));
+        return;
+      }
+      const { latitude, longitude } = results[0];
+      const { error } = await supabase
+        .from('companies')
+        .update({ address, latitude, longitude })
+        .eq('id', effectiveCompanyId!);
+      if (error) Alert.alert('Error', error.message);
+    } catch (e: any) {
+      Alert.alert('Error', e.message);
+    } finally {
+      setSavingAddress(false);
+    }
   }
 
   async function handleLogoUpload() {
@@ -787,7 +814,7 @@ export default function AdminScreen() {
             )}
             <View style={styles.logoRowInfo}>
               <Text style={styles.logoRowTitle}>{t('companyLogo')}</Text>
-              <Text style={styles.logoRowSub}>{logoUploading ? 'Uploading...' : 'Tap to change'}</Text>
+              <Text style={styles.logoRowSub}>{logoUploading ? t('uploading') : t('tapToChange')}</Text>
             </View>
             {logoUploading && <ActivityIndicator size="small" color="#D85A30" />}
           </TouchableOpacity>
@@ -807,7 +834,23 @@ export default function AdminScreen() {
             style={[styles.saveBtn, savingAbout && styles.saveBtnDisabled]}
             onPress={saveAbout}
             disabled={savingAbout}>
-            <Text style={styles.saveBtnText}>{savingAbout ? 'Saving...' : 'Save'}</Text>
+            <Text style={styles.saveBtnText}>{savingAbout ? t('saving') : t('save')}</Text>
+          </TouchableOpacity>
+
+          {/* Address */}
+          <Text style={styles.settingsLabel}>{t('addressLabel')}</Text>
+          <TextInput
+            style={styles.formInput}
+            placeholder={t('addressPlaceholder')}
+            placeholderTextColor="#9A9285"
+            value={addressText}
+            onChangeText={setAddressText}
+          />
+          <TouchableOpacity
+            style={[styles.saveBtn, savingAddress && styles.saveBtnDisabled]}
+            onPress={saveAddress}
+            disabled={savingAddress}>
+            <Text style={styles.saveBtnText}>{savingAddress ? t('saving') : t('saveAddress')}</Text>
           </TouchableOpacity>
         </View>
 

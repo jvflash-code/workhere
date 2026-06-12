@@ -174,6 +174,18 @@ const translations = {
     empYearsPh: 'Years at company (e.g. 3 years)',
     empQuotePh: 'Short quote from the employee',
     uploadVideo: 'Upload Video',
+
+    // Location
+    locationLabel: 'Location',
+    openInMaps: 'Open in Maps →',
+    addressLabel: 'Address',
+    addressPlaceholder: 'Street, city, state...',
+    saveAddress: 'Save address',
+    addressNotFound: 'Could not find that address. Try adding city and state.',
+    save: 'Save',
+    saving: 'Saving...',
+    uploading: 'Uploading...',
+    tapToChange: 'Tap to change',
   },
 
   es: {
@@ -349,6 +361,18 @@ const translations = {
     empYearsPh: 'Años en la empresa (ej. 3 años)',
     empQuotePh: 'Cita breve del empleado',
     uploadVideo: 'Subir video',
+
+    // Location
+    locationLabel: 'Ubicación',
+    openInMaps: 'Abrir en Mapas →',
+    addressLabel: 'Dirección',
+    addressPlaceholder: 'Calle, ciudad, estado...',
+    saveAddress: 'Guardar dirección',
+    addressNotFound: 'No se encontró esa dirección. Intenta agregar ciudad y estado.',
+    save: 'Guardar',
+    saving: 'Guardando...',
+    uploading: 'Subiendo...',
+    tapToChange: 'Toca para cambiar',
   },
 };
 

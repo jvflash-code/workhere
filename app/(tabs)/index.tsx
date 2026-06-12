@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 import LangToggle from '../../components/LangToggle';
 import { useActiveCompany } from '../../contexts/CompanyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -19,6 +20,16 @@ export default function HomeScreen() {
     if (!companyId) return;
     supabase.rpc('increment_company_views', { company_id_param: companyId });
   }, [companyId]);
+
+  function openInMaps() {
+    if (company?.latitude == null || company?.longitude == null) return;
+    const label = encodeURIComponent(company.name);
+    const url = Platform.select({
+      ios: `maps:0,0?q=${label}@${company.latitude},${company.longitude}`,
+      default: `geo:0,0?q=${company.latitude},${company.longitude}(${label})`,
+    });
+    Linking.openURL(url);
+  }
 
   return (
     <>
@@ -104,6 +115,38 @@ export default function HomeScreen() {
           </>
         )}
 
+        {/* Location */}
+        {company?.latitude != null && company?.longitude != null && (
+          <>
+            <Text style={styles.sectionLabel}>{t('locationLabel')}</Text>
+            <TouchableOpacity style={styles.mapCard} onPress={openInMaps} activeOpacity={0.85}>
+              <View pointerEvents="none">
+                <MapView
+                  style={styles.map}
+                  initialRegion={{
+                    latitude: company.latitude,
+                    longitude: company.longitude,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                  }}
+                  scrollEnabled={false}
+                  zoomEnabled={false}
+                  pitchEnabled={false}
+                  rotateEnabled={false}>
+                  <Marker
+                    coordinate={{ latitude: company.latitude, longitude: company.longitude }}
+                    title={company.name}
+                  />
+                </MapView>
+              </View>
+              <View style={styles.mapFooter}>
+                <Text style={styles.mapAddress} numberOfLines={2}>📍 {company.address ?? company.name}</Text>
+                <Text style={styles.mapOpen}>{t('openInMaps')}</Text>
+              </View>
+            </TouchableOpacity>
+          </>
+        )}
+
         <TouchableOpacity style={styles.ctaBtn} onPress={() => router.push('/(tabs)/explore')}>
           <Text style={styles.ctaBtnText}>{t('watchVideos')}</Text>
         </TouchableOpacity>
@@ -164,6 +207,11 @@ const styles = StyleSheet.create({
   perkMore: { fontSize: 11, color: '#B5471F', marginTop: 6, fontWeight: '600' },
   aboutCard: { backgroundColor: 'white', borderRadius: 12, padding: 16, marginHorizontal: 16, marginBottom: 8, borderWidth: 1, borderColor: '#EDE5D6' },
   aboutText: { fontSize: 14, color: '#3D382F', lineHeight: 22 },
+  mapCard: { backgroundColor: 'white', borderRadius: 12, borderWidth: 1, borderColor: '#EDE5D6', marginHorizontal: 16, marginBottom: 8, overflow: 'hidden' },
+  map: { width: '100%', height: 160 },
+  mapFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 12, gap: 8 },
+  mapAddress: { flex: 1, fontSize: 13, color: '#3D382F', lineHeight: 18 },
+  mapOpen: { fontSize: 13, fontWeight: '600', color: '#B5471F' },
   ctaBtn: { backgroundColor: '#D85A30', margin: 16, padding: 16, borderRadius: 12, alignItems: 'center' },
   ctaBtnText: { color: 'white', fontSize: 15, fontWeight: '600' },
   searchBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, margin: 16, marginTop: 4, marginBottom: 32, padding: 14, borderRadius: 12, borderWidth: 1.5, borderColor: '#D85A30', backgroundColor: 'white' },

@@ -11,6 +11,9 @@ export type Company = {
   rating: number;
   recommend_pct: number;
   view_count: number;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 export type Employee = {

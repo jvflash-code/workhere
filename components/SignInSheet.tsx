@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   logoAccent: { color: '#D85A30' },
   title: { fontSize: 20, fontWeight: '700', color: '#26221C', textAlign: 'center', marginBottom: 8 },
   sub: { fontSize: 14, color: '#6E675C', textAlign: 'center', lineHeight: 20, marginBottom: 28 },
-  appleBtn: { backgroundColor: '#000', borderRadius: 14, padding: 16, width: '100%', alignItems: 'center', marginBottom: 12 },
+  appleBtn: { backgroundColor: '#D85A30', borderRadius: 14, padding: 16, width: '100%', alignItems: 'center', marginBottom: 12 },
   appleBtnText: { color: 'white', fontSize: 15, fontWeight: '600' },
   dismissBtn: {},
   dismissText: { color: '#8A8275', fontSize: 13 },

@@ -9,7 +9,19 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.whyworkhere.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "WhyWorkHere needs access to your photo library to upload employee testimonial videos and company logos.",
+        "NSCameraUsageDescription": "WhyWorkHere needs camera access to record employee testimonial videos.",
+        "NSMicrophoneUsageDescription": "WhyWorkHere needs microphone access to record audio for employee testimonial videos.",
+        "NSUserNotificationUsageDescription": "WhyWorkHere sends you notifications when someone replies to your chat."
+      },
+      "usesAppleSignIn": false,
+      "entitlements": {
+        "aps-environment": "production"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -33,10 +45,26 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#1A5CFF",
           "dark": {
-            "backgroundColor": "#000000"
+            "backgroundColor": "#1A5CFF"
           }
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#1A5CFF",
+          "sounds": []
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "WhyWorkHere needs access to your photo library to upload employee testimonial videos and company logos.",
+          "cameraPermission": "WhyWorkHere needs camera access to record employee testimonial videos.",
+          "microphonePermission": "WhyWorkHere needs microphone access to record audio for employee testimonial videos."
         }
       ],
       "expo-web-browser"

@@ -13,6 +13,7 @@
       "bundleIdentifier": "com.whyworkhere.app",
       "buildNumber": "1",
       "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
         "NSPhotoLibraryUsageDescription": "WhyWorkHere needs access to your photo library to upload employee testimonial videos and company logos.",
         "NSCameraUsageDescription": "WhyWorkHere needs camera access to record employee testimonial videos.",
         "NSMicrophoneUsageDescription": "WhyWorkHere needs microphone access to record audio for employee testimonial videos.",

@@ -2,9 +2,11 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import CompanyDirectory from '../../components/CompanyDirectory';
 import { useActiveCompany } from '../../contexts/CompanyContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function TabLayout() {
   const { companyId } = useActiveCompany();
+  const { t } = useLanguage();
 
   if (!companyId) {
     return <CompanyDirectory />;
@@ -25,8 +27,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Profile',
-          tabBarLabel: 'Profile',
+          title: t('tabProfile'),
+          tabBarLabel: t('tabProfile'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="business-outline" size={size} color={color} />
           ),
@@ -35,8 +37,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Videos',
-          tabBarLabel: 'Videos',
+          title: t('tabVideos'),
+          tabBarLabel: t('tabVideos'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="play-circle-outline" size={size} color={color} />
           ),
@@ -45,8 +47,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="chat"
         options={{
-          title: 'Chat',
-          tabBarLabel: 'Chat',
+          title: t('tabChat'),
+          tabBarLabel: t('tabChat'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubble-ellipses-outline" size={size} color={color} />
           ),
@@ -55,8 +57,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="admin"
         options={{
-          title: 'Admin',
-          tabBarLabel: 'Admin',
+          title: t('tabAdmin'),
+          tabBarLabel: t('tabAdmin'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="settings-outline" size={size} color={color} />
           ),

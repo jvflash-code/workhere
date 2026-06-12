@@ -39,8 +39,8 @@ export default function VideosScreen() {
         ) : videos.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyIcon}>🎬</Text>
-            <Text style={styles.emptyTitle}>No videos yet</Text>
-            <Text style={styles.emptySub}>Employee testimonials will appear here once they go live.</Text>
+            <Text style={styles.emptyTitle}>{t('noVideosTitle')}</Text>
+            <Text style={styles.emptySub}>{t('noVideosSub')}</Text>
           </View>
         ) : (
           videos.map((v: VideoItem) => {
@@ -65,7 +65,7 @@ export default function VideosScreen() {
                   <View style={styles.playBtn}>
                     <Text style={styles.playIcon}>▶</Text>
                   </View>
-                  <Text style={styles.tapHint}>Tap to play</Text>
+                  <Text style={styles.tapHint}>{t('tapToPlay')}</Text>
                   <Text style={styles.duration}>{v.duration}</Text>
                 </TouchableOpacity>
 

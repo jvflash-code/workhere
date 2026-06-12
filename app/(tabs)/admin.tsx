@@ -536,15 +536,15 @@ export default function AdminScreen() {
     return (
       <View style={styles.gateContainer}>
         <Text style={styles.gateLogo}>Why<Text style={{ color: '#D85A30' }}>Work</Text>Here</Text>
-        <Text style={styles.gateTitle}>Showcase your company culture</Text>
+        <Text style={styles.gateTitle}>{t('gateTitle')}</Text>
         <Text style={styles.gateSub}>
-          Create a free employer profile so job seekers can hear directly from your team.
+          {t('gateSub')}
         </Text>
         <TouchableOpacity style={styles.gateBtn} onPress={() => setShowOnboarding(true)}>
-          <Text style={styles.gateBtnText}>Set up my company →</Text>
+          <Text style={styles.gateBtnText}>{t('gateBtn')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.gateSecondaryBtn} onPress={() => setShowSignIn(true)}>
-          <Text style={styles.gateSecondaryBtnText}>Already have an account? Sign in</Text>
+          <Text style={styles.gateSecondaryBtnText}>{t('gateSignIn')}</Text>
         </TouchableOpacity>
         <EmployerOnboarding
           visible={showOnboarding}
@@ -564,10 +564,10 @@ export default function AdminScreen() {
   if (profile.role === 'employer' && !profile.company_id) {
     return (
       <View style={styles.gateContainer}>
-        <Text style={styles.gateTitle}>Almost there!</Text>
-        <Text style={styles.gateSub}>Finish setting up your company profile to get started.</Text>
+        <Text style={styles.gateTitle}>{t('almostThere')}</Text>
+        <Text style={styles.gateSub}>{t('finishSetup')}</Text>
         <TouchableOpacity style={styles.gateBtn} onPress={() => setShowOnboarding(true)}>
-          <Text style={styles.gateBtnText}>Complete setup →</Text>
+          <Text style={styles.gateBtnText}>{t('completeSetup')}</Text>
         </TouchableOpacity>
         <EmployerOnboarding
           visible={showOnboarding}
@@ -600,9 +600,9 @@ export default function AdminScreen() {
         {/* Inbox Section */}
         <View style={styles.inboxSection}>
           <View style={styles.inboxHeader}>
-            <Text style={styles.inboxTitle}>Inbox</Text>
+            <Text style={styles.inboxTitle}>{t('inbox')}</Text>
             <TouchableOpacity onPress={loadInbox} style={styles.refreshBtn}>
-              <Text style={styles.refreshText}>Refresh</Text>
+              <Text style={styles.refreshText}>{t('refresh')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -610,7 +610,7 @@ export default function AdminScreen() {
             <ActivityIndicator color="#D85A30" size="small" style={{ marginVertical: 12 }} />
           ) : conversations.length === 0 ? (
             <View style={styles.emptyInbox}>
-              <Text style={styles.emptyInboxText}>No messages yet. User messages will appear here.</Text>
+              <Text style={styles.emptyInboxText}>{t('noMessages')}</Text>
             </View>
           ) : (
             conversations.map((conv) => (
@@ -680,7 +680,7 @@ export default function AdminScreen() {
         {/* Pending Review */}
         {!videosLoading && videos.filter((v: VideoItem) => v.status === 'pending').length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Pending Review</Text>
+            <Text style={styles.sectionLabel}>{t('pendingReview')}</Text>
             {videos.filter((v: VideoItem) => v.status === 'pending').map((v: VideoItem) => {
               const emp = v.employees;
               return (
@@ -716,7 +716,7 @@ export default function AdminScreen() {
           {videosLoading ? (
             <ActivityIndicator color="#D85A30" size="small" style={{ marginVertical: 12 }} />
           ) : videos.filter((v: VideoItem) => v.status === 'live').length === 0 ? (
-            <Text style={styles.emptyInboxText}>No live videos yet. Approve a pending video above.</Text>
+            <Text style={styles.emptyInboxText}>{t('noLiveVideos')}</Text>
           ) : (
             videos.filter((v: VideoItem) => v.status === 'live').map((v: VideoItem) => {
               const emp = v.employees;
@@ -743,9 +743,9 @@ export default function AdminScreen() {
         {/* Perks & Benefits */}
         <View style={styles.section}>
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionLabel}>Perks & Benefits</Text>
+            <Text style={styles.sectionLabel}>{t('perksBenefits')}</Text>
             <TouchableOpacity onPress={() => setShowPerksManager(true)}>
-              <Text style={styles.sectionAction}>Manage</Text>
+              <Text style={styles.sectionAction}>{t('manage')}</Text>
             </TouchableOpacity>
           </View>
           {perksLoading ? (
@@ -753,8 +753,8 @@ export default function AdminScreen() {
           ) : perks.length === 0 ? (
             <TouchableOpacity style={styles.emptyPerksZone} onPress={() => setShowPerksManager(true)}>
               <Text style={styles.emptyPerksIcon}>🎁</Text>
-              <Text style={styles.emptyPerksTitle}>Add your perks</Text>
-              <Text style={styles.emptyPerksSub}>Show job seekers why your company is a great place to work.</Text>
+              <Text style={styles.emptyPerksTitle}>{t('addYourPerks')}</Text>
+              <Text style={styles.emptyPerksSub}>{t('addPerksSub')}</Text>
             </TouchableOpacity>
           ) : (
             perks.map((perk) => (
@@ -765,7 +765,7 @@ export default function AdminScreen() {
                   {perk.description ? <Text style={styles.perkRowDesc} numberOfLines={1}>{perk.description}</Text> : null}
                 </View>
                 <TouchableOpacity style={styles.perkRowBtn} onPress={() => { openEditPerk(perk); }}>
-                  <Text style={styles.perkRowBtnText}>Edit</Text>
+                  <Text style={styles.perkRowBtnText}>{t('edit')}</Text>
                 </TouchableOpacity>
               </View>
             ))
@@ -774,7 +774,7 @@ export default function AdminScreen() {
 
         {/* Company Settings */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Company Settings</Text>
+          <Text style={styles.sectionLabel}>{t('companySettings')}</Text>
 
           {/* Logo */}
           <TouchableOpacity style={styles.logoRow} onPress={handleLogoUpload} disabled={logoUploading}>
@@ -786,17 +786,17 @@ export default function AdminScreen() {
               </View>
             )}
             <View style={styles.logoRowInfo}>
-              <Text style={styles.logoRowTitle}>Company Logo</Text>
+              <Text style={styles.logoRowTitle}>{t('companyLogo')}</Text>
               <Text style={styles.logoRowSub}>{logoUploading ? 'Uploading...' : 'Tap to change'}</Text>
             </View>
             {logoUploading && <ActivityIndicator size="small" color="#D85A30" />}
           </TouchableOpacity>
 
           {/* About */}
-          <Text style={styles.settingsLabel}>About your company</Text>
+          <Text style={styles.settingsLabel}>{t('aboutYourCompany')}</Text>
           <TextInput
             style={[styles.formInput, styles.formInputMulti]}
-            placeholder="Tell job seekers what makes your company a great place to work..."
+            placeholder={t('aboutPlaceholder')}
             placeholderTextColor="#9A9285"
             value={aboutText}
             onChangeText={setAboutText}
@@ -837,9 +837,9 @@ export default function AdminScreen() {
           <View style={[styles.replyModal, { maxHeight: '85%' }]}>
             <View style={styles.modalHandle} />
             <View style={styles.replyHeader}>
-              <Text style={styles.replyTitle}>Perks & Benefits</Text>
+              <Text style={styles.replyTitle}>{t('perksBenefits')}</Text>
               <TouchableOpacity onPress={() => setShowPerksManager(false)}>
-                <Text style={styles.closeBtn}>Done</Text>
+                <Text style={styles.closeBtn}>{t('done')}</Text>
               </TouchableOpacity>
             </View>
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -850,7 +850,7 @@ export default function AdminScreen() {
                     <Text style={styles.managePerkTitle}>{perk.title}</Text>
                   </View>
                   <TouchableOpacity style={styles.perkEditBtn} onPress={() => { openEditPerk(perk); setShowPerksManager(false); }}>
-                    <Text style={styles.perkEditBtnText}>Edit</Text>
+                    <Text style={styles.perkEditBtnText}>{t('edit')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.perkDeleteBtn} onPress={() => deletePerk(perk.id)}>
                     <Text style={styles.perkDeleteBtnText}>✕</Text>
@@ -858,16 +858,16 @@ export default function AdminScreen() {
                 </View>
               ))}
               {perks.length > 0 && <View style={styles.perkDivider} />}
-              <Text style={styles.templateSectionLabel}>Add from templates</Text>
+              <Text style={styles.templateSectionLabel}>{t('addFromTemplates')}</Text>
               {PERK_TEMPLATES.filter((t) => !perks.some((p) => p.title === t.title)).map((template, i) => (
                 <TouchableOpacity key={i} style={styles.templateRow} onPress={() => addPerkFromTemplate(template.icon, template.title, template.description)}>
                   <Text style={styles.templateIcon}>{template.icon}</Text>
                   <Text style={styles.templateTitle}>{template.title}</Text>
-                  <Text style={styles.templateAdd}>+ Add</Text>
+                  <Text style={styles.templateAdd}>{t('addBtn')}</Text>
                 </TouchableOpacity>
               ))}
               <TouchableOpacity style={styles.addCustomBtn} onPress={() => { openAddCustomPerk(); setShowPerksManager(false); }}>
-                <Text style={styles.addCustomBtnText}>+ Add custom perk</Text>
+                <Text style={styles.addCustomBtnText}>{t('addCustomPerk')}</Text>
               </TouchableOpacity>
               <View style={{ height: 20 }} />
             </ScrollView>
@@ -881,7 +881,7 @@ export default function AdminScreen() {
           <KeyboardAvoidingView style={styles.replyModal} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <View style={styles.modalHandle} />
             <Text style={styles.replyTitle}>{editingPerk?.id ? 'Edit Perk' : 'New Perk'}</Text>
-            <Text style={styles.settingsLabel}>Icon (emoji)</Text>
+            <Text style={styles.settingsLabel}>{t('iconEmoji')}</Text>
             <TextInput
               style={styles.formInput}
               value={perkIcon}
@@ -890,7 +890,7 @@ export default function AdminScreen() {
               placeholderTextColor="#9A9285"
               maxLength={2}
             />
-            <Text style={styles.settingsLabel}>Title *</Text>
+            <Text style={styles.settingsLabel}>{t('titleRequired')}</Text>
             <TextInput
               style={styles.formInput}
               value={perkTitle}
@@ -899,12 +899,12 @@ export default function AdminScreen() {
               placeholderTextColor="#9A9285"
               editable={!savingPerk}
             />
-            <Text style={styles.settingsLabel}>Description</Text>
+            <Text style={styles.settingsLabel}>{t('description')}</Text>
             <TextInput
               style={[styles.formInput, styles.formInputMulti]}
               value={perkDesc}
               onChangeText={setPerkDesc}
-              placeholder="Describe this benefit in detail..."
+              placeholder={t('describeBenefit')}
               placeholderTextColor="#9A9285"
               multiline
               numberOfLines={4}
@@ -915,10 +915,10 @@ export default function AdminScreen() {
             ) : (
               <>
                 <TouchableOpacity style={styles.saveBtn} onPress={savePerk}>
-                  <Text style={styles.saveBtnText}>Save perk</Text>
+                  <Text style={styles.saveBtnText}>{t('savePerk')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={{ alignItems: 'center', marginTop: 12 }} onPress={() => setEditingPerk(null)}>
-                  <Text style={{ color: '#8A8275', fontSize: 13 }}>Cancel</Text>
+                  <Text style={{ color: '#8A8275', fontSize: 13 }}>{t('cancel')}</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -938,7 +938,7 @@ export default function AdminScreen() {
                 {selectedConv?.user_email ?? 'Anonymous'}
               </Text>
               <TouchableOpacity onPress={() => setSelectedConv(null)}>
-                <Text style={styles.closeBtn}>Close</Text>
+                <Text style={styles.closeBtn}>{t('close')}</Text>
               </TouchableOpacity>
             </View>
 
@@ -955,7 +955,7 @@ export default function AdminScreen() {
                   const isUser = msg.role === 'user';
                   return (
                     <View key={msg.id} style={isUser ? styles.themWrapper : styles.meWrapper}>
-                      {isUser && <Text style={styles.senderName}>User</Text>}
+                      {isUser && <Text style={styles.senderName}>{t('userLabel')}</Text>}
                       <View style={[styles.bubble, isUser ? styles.themBubble : styles.meBubble]}>
                         <Text style={[styles.bubbleText, isUser ? styles.themText : styles.meText]}>
                           {msg.content}
@@ -973,7 +973,7 @@ export default function AdminScreen() {
                 style={styles.replyInput}
                 value={replyText}
                 onChangeText={setReplyText}
-                placeholder="Type a reply..."
+                placeholder={t('typeReply')}
                 placeholderTextColor="#9A9285"
                 onSubmitEditing={sendReply}
                 returnKeyType="send"
@@ -1000,13 +1000,13 @@ export default function AdminScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalSheet}>
             <View style={styles.modalHandle} />
-            <Text style={styles.modalTitle}>New Employee Video</Text>
-            <Text style={styles.modalSub}>Fill in the details for this testimonial.</Text>
+            <Text style={styles.modalTitle}>{t('newVideo')}</Text>
+            <Text style={styles.modalSub}>{t('newVideoSub')}</Text>
 
-            <TextInput style={styles.formInput} placeholder="Employee full name *" placeholderTextColor="#9A9285" value={empName} onChangeText={setEmpName} editable={!uploading} />
-            <TextInput style={styles.formInput} placeholder="Job title / role *" placeholderTextColor="#9A9285" value={empRole} onChangeText={setEmpRole} editable={!uploading} />
-            <TextInput style={styles.formInput} placeholder="Years at company (e.g. 3 years)" placeholderTextColor="#9A9285" value={empYears} onChangeText={setEmpYears} editable={!uploading} />
-            <TextInput style={[styles.formInput, styles.formInputMulti]} placeholder="Short quote from the employee" placeholderTextColor="#9A9285" value={videoQuote} onChangeText={setVideoQuote} multiline numberOfLines={3} editable={!uploading} />
+            <TextInput style={styles.formInput} placeholder={t('empNamePh')} placeholderTextColor="#9A9285" value={empName} onChangeText={setEmpName} editable={!uploading} />
+            <TextInput style={styles.formInput} placeholder={t('empRolePh')} placeholderTextColor="#9A9285" value={empRole} onChangeText={setEmpRole} editable={!uploading} />
+            <TextInput style={styles.formInput} placeholder={t('empYearsPh')} placeholderTextColor="#9A9285" value={empYears} onChangeText={setEmpYears} editable={!uploading} />
+            <TextInput style={[styles.formInput, styles.formInputMulti]} placeholder={t('empQuotePh')} placeholderTextColor="#9A9285" value={videoQuote} onChangeText={setVideoQuote} multiline numberOfLines={3} editable={!uploading} />
 
             {uploading ? (
               <View style={styles.uploadingRow}>
@@ -1016,10 +1016,10 @@ export default function AdminScreen() {
             ) : (
               <>
                 <TouchableOpacity style={styles.ctaBtn} onPress={submitUpload}>
-                  <Text style={styles.ctaBtnText}>Upload Video</Text>
+                  <Text style={styles.ctaBtnText}>{t('uploadVideo')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.dismissBtn} onPress={resetUploadForm}>
-                  <Text style={styles.dismissText}>Cancel</Text>
+                  <Text style={styles.dismissText}>{t('cancel')}</Text>
                 </TouchableOpacity>
               </>
             )}

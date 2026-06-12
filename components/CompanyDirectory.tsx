@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useActiveCompany } from '../contexts/CompanyContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 type CompanyRow = {
   id: string;
@@ -14,6 +15,7 @@ type CompanyRow = {
 
 export default function CompanyDirectory() {
   const { setCompanyById } = useActiveCompany();
+  const { t } = useLanguage();
   const [companies, setCompanies] = useState<CompanyRow[]>([]);
   const [filtered, setFiltered] = useState<CompanyRow[]>([]);
   const [search, setSearch] = useState('');
@@ -44,13 +46,13 @@ export default function CompanyDirectory() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.logo}>WhyWork<Text style={styles.logoAccent}>Here</Text></Text>
-        <Text style={styles.sub}>Find a company to explore</Text>
+        <Text style={styles.sub}>{t('findCompany')}</Text>
       </View>
 
       <View style={styles.searchWrap}>
         <TextInput
           style={styles.searchInput}
-          placeholder="Search companies..."
+          placeholder={t('searchPlaceholder')}
           placeholderTextColor="#9A9285"
           value={search}
           onChangeText={setSearch}
@@ -61,7 +63,7 @@ export default function CompanyDirectory() {
         <ActivityIndicator color="#D85A30" size="large" style={styles.loader} />
       ) : filtered.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>No companies found</Text>
+          <Text style={styles.emptyText}>{t('noCompanies')}</Text>
         </View>
       ) : (
         <FlatList

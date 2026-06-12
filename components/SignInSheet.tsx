@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../lib/supabase';
+import { useLanguage } from '../contexts/LanguageContext';
 
 type Props = {
   visible: boolean;
@@ -10,6 +11,7 @@ type Props = {
 type Screen = 'main' | 'email' | 'signup';
 
 export default function SignInSheet({ visible, onClose }: Props) {
+  const { t } = useLanguage();
   const [view, setView] = useState<Screen>('main');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -67,37 +69,37 @@ export default function SignInSheet({ visible, onClose }: Props) {
           {view === 'main' ? (
             <>
               <Text style={styles.logo}>WhyWork<Text style={styles.logoAccent}>Here</Text></Text>
-              <Text style={styles.title}>Chat with real employees</Text>
-              <Text style={styles.sub}>Sign in to ask questions and get honest answers about working here.</Text>
+              <Text style={styles.title}>{t('sheetTitle')}</Text>
+              <Text style={styles.sub}>{t('sheetSub')}</Text>
 
               <TouchableOpacity style={styles.appleBtn} onPress={handleApple}>
-                <Text style={styles.appleBtnText}>🍎  Continue with Apple</Text>
+                <Text style={styles.appleBtnText}>🍎  {t('continueApple')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.googleBtn} onPress={handleGoogle}>
-                <Text style={styles.googleBtnText}>🔵  Continue with Google</Text>
+                <Text style={styles.googleBtnText}>🔵  {t('continueGoogle')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.emailBtn} onPress={() => setView('email')}>
-                <Text style={styles.emailBtnText}>Continue with Email</Text>
+                <Text style={styles.emailBtnText}>{t('continueEmail')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.dismissBtn} onPress={resetAndClose}>
-                <Text style={styles.dismissText}>Maybe later</Text>
+                <Text style={styles.dismissText}>{t('maybeLater')}</Text>
               </TouchableOpacity>
             </>
           ) : view === 'email' ? (
             <>
               <TouchableOpacity style={styles.backBtn} onPress={() => { setView('main'); setError(null); }}>
-                <Text style={styles.backText}>← Back</Text>
+                <Text style={styles.backText}>{t('back')}</Text>
               </TouchableOpacity>
 
-              <Text style={styles.title}>Sign in with Email</Text>
-              <Text style={styles.sub}>Enter your email and password to continue.</Text>
+              <Text style={styles.title}>{t('signInEmailTitle')}</Text>
+              <Text style={styles.sub}>{t('signInEmailSub')}</Text>
 
               <TextInput
                 style={styles.input}
-                placeholder="Email"
+                placeholder={t('email')}
                 placeholderTextColor="#9A9285"
                 value={email}
                 onChangeText={setEmail}
@@ -107,7 +109,7 @@ export default function SignInSheet({ visible, onClose }: Props) {
               />
               <TextInput
                 style={styles.input}
-                placeholder="Password"
+                placeholder={t('password')}
                 placeholderTextColor="#9A9285"
                 value={password}
                 onChangeText={setPassword}
@@ -122,29 +124,29 @@ export default function SignInSheet({ visible, onClose }: Props) {
                 disabled={loading}>
                 {loading
                   ? <ActivityIndicator color="white" />
-                  : <Text style={styles.appleBtnText}>Sign In</Text>}
+                  : <Text style={styles.appleBtnText}>{t('signIn')}</Text>}
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.toggleBtn} onPress={() => { setView('signup'); setError(null); }}>
-                <Text style={styles.toggleText}>No account? Create one</Text>
+                <Text style={styles.toggleText}>{t('noAccountCreate')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.dismissBtn} onPress={resetAndClose}>
-                <Text style={styles.dismissText}>Cancel</Text>
+                <Text style={styles.dismissText}>{t('cancel')}</Text>
               </TouchableOpacity>
             </>
           ) : (
             <>
               <TouchableOpacity style={styles.backBtn} onPress={() => { setView('email'); setError(null); }}>
-                <Text style={styles.backText}>← Back</Text>
+                <Text style={styles.backText}>{t('back')}</Text>
               </TouchableOpacity>
 
-              <Text style={styles.title}>Create Account</Text>
-              <Text style={styles.sub}>Enter your email and choose a password.</Text>
+              <Text style={styles.title}>{t('createAccount')}</Text>
+              <Text style={styles.sub}>{t('createAccountSub')}</Text>
 
               <TextInput
                 style={styles.input}
-                placeholder="Email"
+                placeholder={t('email')}
                 placeholderTextColor="#9A9285"
                 value={email}
                 onChangeText={setEmail}
@@ -154,7 +156,7 @@ export default function SignInSheet({ visible, onClose }: Props) {
               />
               <TextInput
                 style={styles.input}
-                placeholder="Password (min 6 characters)"
+                placeholder={t('passwordMin')}
                 placeholderTextColor="#9A9285"
                 value={password}
                 onChangeText={setPassword}
@@ -169,11 +171,11 @@ export default function SignInSheet({ visible, onClose }: Props) {
                 disabled={loading}>
                 {loading
                   ? <ActivityIndicator color="white" />
-                  : <Text style={styles.appleBtnText}>Create Account</Text>}
+                  : <Text style={styles.appleBtnText}>{t('createAccount')}</Text>}
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.dismissBtn} onPress={resetAndClose}>
-                <Text style={styles.dismissText}>Cancel</Text>
+                <Text style={styles.dismissText}>{t('cancel')}</Text>
               </TouchableOpacity>
             </>
           )}

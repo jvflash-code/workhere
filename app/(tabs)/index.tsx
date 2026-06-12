@@ -66,7 +66,7 @@ export default function HomeScreen() {
                   <Text style={styles.statLbl}>{t('recommend')}</Text>
                 </View>
               </View>
-              <Text style={styles.surveyNote}>* Based on internal employee survey</Text>
+              <Text style={styles.surveyNote}>{t('surveyNote')}</Text>
             </>
           )}
         </View>
@@ -87,7 +87,7 @@ export default function HomeScreen() {
                   {perk.description ? (
                     <Text style={styles.perkDesc} numberOfLines={2}>{perk.description}</Text>
                   ) : null}
-                  <Text style={styles.perkMore}>Tap for more →</Text>
+                  <Text style={styles.perkMore}>{t('tapForMore')}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -97,7 +97,7 @@ export default function HomeScreen() {
         {/* About */}
         {company?.about && (
           <>
-            <Text style={styles.sectionLabel}>About</Text>
+            <Text style={styles.sectionLabel}>{t('aboutLabel')}</Text>
             <View style={styles.aboutCard}>
               <Text style={styles.aboutText}>{company.about}</Text>
             </View>
@@ -110,7 +110,7 @@ export default function HomeScreen() {
 
         <TouchableOpacity style={styles.searchBtn} onPress={clearCompany}>
           <Text style={styles.searchBtnIcon}>🔍</Text>
-          <Text style={styles.searchBtnText}>Search Companies</Text>
+          <Text style={styles.searchBtnText}>{t('searchCompanies')}</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -127,7 +127,7 @@ export default function HomeScreen() {
             <Text style={styles.detailTitle}>{selectedPerk?.title}</Text>
             <Text style={styles.detailDesc}>{selectedPerk?.description}</Text>
             <TouchableOpacity style={styles.detailClose} onPress={() => setSelectedPerk(null)}>
-              <Text style={styles.detailCloseText}>Done</Text>
+              <Text style={styles.detailCloseText}>{t('done')}</Text>
             </TouchableOpacity>
           </Pressable>
         </Pressable>

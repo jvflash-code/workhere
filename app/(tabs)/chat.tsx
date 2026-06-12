@@ -295,10 +295,10 @@ export default function ChatScreen() {
         {/* Locked guest view */}
         <View style={styles.guestArea}>
           <Text style={styles.lockIcon}>🔒</Text>
-          <Text style={styles.guestTitle}>Sign in to chat with employees</Text>
-          <Text style={styles.guestSub}>Get honest answers about what it's really like to work here.</Text>
+          <Text style={styles.guestTitle}>{t('guestTitle')}</Text>
+          <Text style={styles.guestSub}>{t('guestSub')}</Text>
           <TouchableOpacity style={styles.signInBtn} onPress={() => setShowSignIn(true)}>
-            <Text style={styles.signInBtnText}>Sign In</Text>
+            <Text style={styles.signInBtnText}>{t('signIn')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -358,7 +358,7 @@ export default function ChatScreen() {
                 {msg.translating ? (
                   <View style={styles.translatingRow}>
                     <ActivityIndicator size="small" color="#1D9E75" />
-                    <Text style={styles.translatingText}>Translating...</Text>
+                    <Text style={styles.translatingText}>{t('translating')}</Text>
                   </View>
                 ) : msg.translated ? (
                   <View style={styles.translatedTag}>

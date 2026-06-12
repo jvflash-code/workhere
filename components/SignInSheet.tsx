@@ -18,14 +18,6 @@ export default function SignInSheet({ visible, onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function handleApple() {
-    Alert.alert('Coming Soon', 'Apple Sign-In will be available when the app is published to the App Store.');
-  }
-
-  function handleGoogle() {
-    Alert.alert('Coming Soon', 'Google Sign-In will be available in the next update.');
-  }
-
   async function handleEmailSignIn() {
     setError(null);
     setLoading(true);
@@ -72,16 +64,8 @@ export default function SignInSheet({ visible, onClose }: Props) {
               <Text style={styles.title}>{t('sheetTitle')}</Text>
               <Text style={styles.sub}>{t('sheetSub')}</Text>
 
-              <TouchableOpacity style={styles.appleBtn} onPress={handleApple}>
-                <Text style={styles.appleBtnText}>🍎  {t('continueApple')}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.googleBtn} onPress={handleGoogle}>
-                <Text style={styles.googleBtnText}>🔵  {t('continueGoogle')}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.emailBtn} onPress={() => setView('email')}>
-                <Text style={styles.emailBtnText}>{t('continueEmail')}</Text>
+              <TouchableOpacity style={styles.appleBtn} onPress={() => setView('email')}>
+                <Text style={styles.appleBtnText}>{t('continueEmail')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.dismissBtn} onPress={resetAndClose}>
@@ -195,10 +179,6 @@ const styles = StyleSheet.create({
   sub: { fontSize: 14, color: '#6E675C', textAlign: 'center', lineHeight: 20, marginBottom: 28 },
   appleBtn: { backgroundColor: '#000', borderRadius: 14, padding: 16, width: '100%', alignItems: 'center', marginBottom: 12 },
   appleBtnText: { color: 'white', fontSize: 15, fontWeight: '600' },
-  googleBtn: { backgroundColor: 'white', borderRadius: 14, padding: 16, width: '100%', alignItems: 'center', borderWidth: 1.5, borderColor: '#E5DECF', marginBottom: 20 },
-  googleBtnText: { color: '#26221C', fontSize: 15, fontWeight: '600' },
-  emailBtn: { marginBottom: 16 },
-  emailBtnText: { color: '#B5471F', fontSize: 14, fontWeight: '600' },
   dismissBtn: {},
   dismissText: { color: '#8A8275', fontSize: 13 },
   backBtn: { alignSelf: 'flex-start', marginBottom: 16 },

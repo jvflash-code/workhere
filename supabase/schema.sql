@@ -70,14 +70,23 @@ create table if not exists videos (
   created_at timestamp with time zone default now()
 );
 
+-- Conversations table (see migrations/20260327000000_chat_tables.sql)
+create table if not exists conversations (
+  id uuid default gen_random_uuid() primary key,
+  company_id uuid not null references companies(id),
+  user_id uuid references auth.users(id),
+  employee_id uuid references employees(id),
+  status text not null default 'active',
+  created_at timestamp with time zone default now()
+);
+
 -- Messages table
 create table if not exists messages (
   id uuid default gen_random_uuid() primary key,
-  from_user_id uuid references auth.users,
-  to_user_id uuid references auth.users,
-  employee_id uuid references employees(id),
-  text text not null,
-  translated text,
+  conversation_id uuid not null references conversations(id) on delete cascade,
+  role text not null check (role in ('user', 'assistant', 'employee')),
+  content text not null,
+  flagged boolean not null default false,
   created_at timestamp with time zone default now()
 );
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -43,7 +44,7 @@ function nextLocalId() {
 export default function ChatScreen() {
   const { companyId } = useActiveCompany();
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [showSignIn, setShowSignIn] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -197,6 +198,13 @@ export default function ChatScreen() {
     };
   }, [conversationId, employee]);
 
+  function handleSignOut() {
+    Alert.alert('Sign out', 'Are you sure you want to sign out?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Sign Out', style: 'destructive', onPress: () => signOut() },
+    ]);
+  }
+
   async function sendMessage() {
     const text = input.trim();
     if (!text || sending || !conversationId) return;
@@ -320,6 +328,14 @@ export default function ChatScreen() {
           </View>
           <LangToggle />
         </View>
+        <View style={styles.accountRow}>
+          <Text style={styles.accountEmail} numberOfLines={1}>
+            {user.email ?? 'Signed in'}
+          </Text>
+          <TouchableOpacity onPress={handleSignOut} hitSlop={8}>
+            <Text style={styles.signOutText}>Sign out</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Language bar */}
@@ -415,6 +431,9 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f5f5' },
   header: { backgroundColor: '#1A5CFF', padding: 24, paddingTop: 60 },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  accountRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 },
+  accountEmail: { flex: 1, fontSize: 12, color: 'rgba(255,255,255,0.7)', marginRight: 12 },
+  signOutText: { fontSize: 12, color: 'white', fontWeight: '600', textDecorationLine: 'underline' },
   title: { fontSize: 20, fontWeight: '700', color: 'white' },
   sub: { fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 3 },
   langBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', padding: 10, paddingHorizontal: 16, gap: 8, borderBottomWidth: 0.5, borderBottomColor: '#eee' },

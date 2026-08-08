@@ -1,50 +1,94 @@
-# Welcome to your Expo app 👋
+# WhyWorkHere
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile app that lets job seekers hear what it's really like to work somewhere —
+watch short employee testimonial videos and chat (via AI personas or the real
+team) to get honest answers before they apply. Employers get a dashboard to
+manage their team, upload videos, and reply to candidates.
 
-## Get started
+Built with **Expo / React Native** (Expo Router) and **Supabase** (Postgres,
+Auth, Storage, Edge Functions).
 
-1. Install dependencies
+## Features
+
+**Job seekers**
+- Browse a directory of companies (with deep links to a specific company)
+- View a company profile: stats, perks, and employee testimonial videos
+- Chat with an AI persona of a real employee, powered by Claude
+- Account tab: manage your display name and resume past conversations
+- Automatic message translation (EN ⇄ ES) and an unread badge on the Chat tab
+
+**Employers (Admin tab)**
+- Upload employee testimonial videos to Supabase Storage and moderate them
+- Manage the team (add / edit / remove employees)
+- Inbox: read job-seeker conversations by real email and reply to them
+- Subscription / plan management UI
+
+## Tech stack
+
+| Layer | Tech |
+|-------|------|
+| App | Expo, React Native, Expo Router, TypeScript |
+| Backend | Supabase (Postgres, Auth, Storage, Realtime) |
+| Functions | Supabase Edge Functions (Deno) |
+| AI | Claude (Anthropic) via the `chat` edge function |
+| Push | Expo Push Notifications |
+
+## Getting started
+
+1. Install dependencies:
 
    ```bash
    npm install
    ```
 
-2. Start the app
+2. Create a `.env` in the project root with your Supabase project values:
+
+   ```
+   EXPO_PUBLIC_SUPABASE_URL=https://<your-project>.supabase.co
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
+   ```
+
+3. Start the app:
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+   Open it in a development build, an iOS/Android simulator, or Expo Go.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Supabase setup
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+**Database** — apply the schema and migrations:
 
 ```bash
-npm run reset-project
+supabase db push          # applies supabase/migrations/*
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+`supabase/schema.sql` documents the full schema (companies, employees, videos,
+conversations, messages, profiles, plans, subscriptions, push tokens) and seeds
+a sample company.
 
-## Learn more
+**Edge functions** — deploy from `supabase/functions/`:
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+supabase functions deploy chat     # AI employee chat (needs ANTHROPIC_API_KEY)
+supabase functions deploy push     # Expo push notifications
+supabase functions deploy inbox    # employer inbox: list / thread / reply
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected into every function
+automatically; the `chat` function additionally needs `ANTHROPIC_API_KEY` set as
+a function secret.
 
-## Join the community
+## Project structure
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```
+app/(tabs)/        Screens: index (company profile), explore (videos),
+                   chat, account, admin
+components/        Shared UI (CompanyDirectory, VideoPlayer, SignInSheet, …)
+contexts/          CompanyContext, LanguageContext, UnreadContext
+hooks/             useAuth, useCompany, usePushNotifications
+lib/               Supabase client
+supabase/          schema.sql, migrations/, functions/
+utils/             translation helpers
+```

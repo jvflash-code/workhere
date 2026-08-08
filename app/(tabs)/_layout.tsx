@@ -2,9 +2,11 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import CompanyDirectory from '../../components/CompanyDirectory';
 import { useActiveCompany } from '../../contexts/CompanyContext';
+import { useUnread } from '../../contexts/UnreadContext';
 
 export default function TabLayout() {
   const { companyId } = useActiveCompany();
+  const { unreadCount } = useUnread();
 
   if (!companyId) {
     return <CompanyDirectory />;
@@ -47,6 +49,7 @@ export default function TabLayout() {
         options={{
           title: 'Chat',
           tabBarLabel: 'Chat',
+          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubble-ellipses-outline" size={size} color={color} />
           ),

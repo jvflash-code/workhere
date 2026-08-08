@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -15,6 +16,7 @@ import LangToggle from '../../components/LangToggle';
 import SignInSheet from '../../components/SignInSheet';
 import { useActiveCompany } from '../../contexts/CompanyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useUnread } from '../../contexts/UnreadContext';
 import { useAuth } from '../../hooks/useAuth';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
 import { supabase } from '../../lib/supabase';
@@ -45,7 +47,15 @@ export default function ChatScreen() {
   const { companyId } = useActiveCompany();
   const { t } = useLanguage();
   const { user, signOut } = useAuth();
+  const { markChatRead } = useUnread();
   const [showSignIn, setShowSignIn] = useState(false);
+
+  // Clear the Chat tab badge whenever this screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      markChatRead();
+    }, [markChatRead])
+  );
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);

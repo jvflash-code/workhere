@@ -72,8 +72,7 @@ export function useVideos(companyId: string) {
   return { videos, loading, error };
 }
 
-export function useAllVideos(companyId: string) {
-  const [videos, setVideos] = useState<VideoItem[]>([]);
+export function useAllVideos(companyId: string) {  const [videos, setVideos] = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
@@ -94,4 +93,29 @@ export function useAllVideos(companyId: string) {
   function refetch() { setTick((t) => t + 1); }
 
   return { videos, loading, error, refetch };
+}
+
+export function useEmployees(companyId: string) {
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    setLoading(true);
+    supabase
+      .from('employees')
+      .select('id, name, role, initials, color, years_at_company')
+      .eq('company_id', companyId)
+      .order('created_at', { ascending: true })
+      .then(({ data, error }) => {
+        if (error) setError(error.message);
+        else setEmployees(data ?? []);
+        setLoading(false);
+      });
+  }, [companyId, tick]);
+
+  function refetch() { setTick((t) => t + 1); }
+
+  return { employees, loading, error, refetch };
 }

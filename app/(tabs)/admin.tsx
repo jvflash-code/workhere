@@ -4,7 +4,7 @@ import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Scroll
 import LangToggle from '../../components/LangToggle';
 import { useActiveCompany } from '../../contexts/CompanyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { useAllVideos, useCompany, VideoItem } from '../../hooks/useCompany';
+import { Employee, useAllVideos, useCompany, useEmployees, VideoItem } from '../../hooks/useCompany';
 import { supabase } from '../../lib/supabase';
 
 type Plan = 'starter' | 'growth' | 'pro';
@@ -30,6 +30,7 @@ export default function AdminScreen() {
   const { t } = useLanguage();
   const { company } = useCompany(companyId!);
   const { videos, loading: videosLoading, refetch } = useAllVideos(companyId!);
+  const { employees, loading: employeesLoading, refetch: refetchEmployees } = useEmployees(companyId!);
   const [currentPlan, setCurrentPlan] = useState<Plan>('growth');
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [annual, setAnnual] = useState(false);
@@ -56,6 +57,15 @@ export default function AdminScreen() {
   const [videoQuote, setVideoQuote] = useState('');
 
   const AVATAR_COLORS = ['#1A5CFF', '#6C3DE8', '#1D9E75', '#E8472A', '#F59E0B', '#0EA5E9'];
+
+  // Employee management state
+  const [showEmployeeForm, setShowEmployeeForm] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [empFormName, setEmpFormName] = useState('');
+  const [empFormRole, setEmpFormRole] = useState('');
+  const [empFormYears, setEmpFormYears] = useState('');
+  const [empFormColor, setEmpFormColor] = useState(AVATAR_COLORS[0]);
+  const [savingEmployee, setSavingEmployee] = useState(false);
 
   const plans = [
     {
@@ -313,6 +323,83 @@ export default function AdminScreen() {
     }
   }
 
+  function openAddEmployee() {
+    setEditingEmployee(null);
+    setEmpFormName('');
+    setEmpFormRole('');
+    setEmpFormYears('');
+    setEmpFormColor(AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)]);
+    setShowEmployeeForm(true);
+  }
+
+  function openEditEmployee(emp: Employee) {
+    setEditingEmployee(emp);
+    setEmpFormName(emp.name);
+    setEmpFormRole(emp.role ?? '');
+    setEmpFormYears(emp.years_at_company ?? '');
+    setEmpFormColor(emp.color ?? AVATAR_COLORS[0]);
+    setShowEmployeeForm(true);
+  }
+
+  function closeEmployeeForm() {
+    setShowEmployeeForm(false);
+    setEditingEmployee(null);
+    setSavingEmployee(false);
+  }
+
+  async function saveEmployee() {
+    if (!empFormName.trim() || !empFormRole.trim()) {
+      Alert.alert('Missing info', 'Please fill in the employee name and role.');
+      return;
+    }
+    setSavingEmployee(true);
+    const initials = empFormName.trim().split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
+    const years = empFormYears.trim() || '1 year';
+
+    try {
+      if (editingEmployee) {
+        const { error } = await supabase
+          .from('employees')
+          .update({ name: empFormName.trim(), role: empFormRole.trim(), initials, color: empFormColor, years_at_company: years })
+          .eq('id', editingEmployee.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('employees')
+          .insert({ company_id: companyId!, name: empFormName.trim(), role: empFormRole.trim(), initials, color: empFormColor, years_at_company: years });
+        if (error) throw error;
+      }
+      closeEmployeeForm();
+      refetchEmployees();
+      refetch(); // video rows show employee info via join — refresh so edits appear
+    } catch (err: any) {
+      setSavingEmployee(false);
+      Alert.alert('Save failed', err.message ?? 'Something went wrong.');
+    }
+  }
+
+  function confirmDeleteEmployee(emp: Employee) {
+    Alert.alert('Remove employee', `Remove ${emp.name} from your team? This cannot be undone.`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Remove', style: 'destructive', onPress: () => deleteEmployee(emp) },
+    ]);
+  }
+
+  async function deleteEmployee(emp: Employee) {
+    const { error } = await supabase.from('employees').delete().eq('id', emp.id);
+    if (error) {
+      // Most likely a foreign-key constraint: the employee still has videos or conversations.
+      Alert.alert(
+        "Can't remove yet",
+        'This employee still has videos or conversations attached. Remove their videos first, then try again.'
+      );
+      return;
+    }
+    closeEmployeeForm();
+    refetchEmployees();
+    refetch();
+  }
+
   function confirmUpgrade() {
     setCurrentPlan(selectedPlan);
     setShowUpgrade(false);
@@ -440,6 +527,37 @@ export default function AdminScreen() {
         </View>
 
         <View style={styles.section}>
+          <View style={styles.teamHeader}>
+            <Text style={styles.sectionLabel}>Team</Text>
+            <TouchableOpacity style={styles.addEmpBtn} onPress={openAddEmployee}>
+              <Text style={styles.addEmpBtnText}>+ Add</Text>
+            </TouchableOpacity>
+          </View>
+          {employeesLoading ? (
+            <ActivityIndicator color="#1A5CFF" size="small" style={{ marginVertical: 12 }} />
+          ) : employees.length === 0 ? (
+            <View style={styles.emptyTeam}>
+              <Text style={styles.emptyTeamText}>No employees yet. Add your first team member.</Text>
+            </View>
+          ) : (
+            employees.map((emp) => (
+              <TouchableOpacity key={emp.id} style={styles.empRow} onPress={() => openEditEmployee(emp)}>
+                <View style={[styles.avatar, { backgroundColor: emp.color }]}>
+                  <Text style={styles.avatarText}>{emp.initials}</Text>
+                </View>
+                <View style={styles.empInfo}>
+                  <Text style={styles.empName}>{emp.name}</Text>
+                  <Text style={styles.empMeta}>
+                    {emp.role}{emp.years_at_company ? ` · ${emp.years_at_company}` : ''}
+                  </Text>
+                </View>
+                <Text style={styles.empEdit}>Edit</Text>
+              </TouchableOpacity>
+            ))
+          )}
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionLabel}>{t('subscription')}</Text>
           <View style={styles.subCard}>
             <View>
@@ -557,6 +675,58 @@ export default function AdminScreen() {
               </>
             )}
           </View>
+        </View>
+      </Modal>
+
+      {/* Employee add/edit modal */}
+      <Modal visible={showEmployeeForm} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <KeyboardAvoidingView
+            style={styles.modalSheet}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+            <View style={styles.modalHandle} />
+            <Text style={styles.modalTitle}>{editingEmployee ? 'Edit Employee' : 'Add Employee'}</Text>
+            <Text style={styles.modalSub}>
+              {editingEmployee ? "Update this team member's details." : 'Add a team member to your company.'}
+            </Text>
+
+            <TextInput style={styles.formInput} placeholder="Employee full name *" placeholderTextColor="#aaa" value={empFormName} onChangeText={setEmpFormName} editable={!savingEmployee} />
+            <TextInput style={styles.formInput} placeholder="Job title / role *" placeholderTextColor="#aaa" value={empFormRole} onChangeText={setEmpFormRole} editable={!savingEmployee} />
+            <TextInput style={styles.formInput} placeholder="Years at company (e.g. 3 years)" placeholderTextColor="#aaa" value={empFormYears} onChangeText={setEmpFormYears} editable={!savingEmployee} />
+
+            <Text style={styles.colorLabel}>Avatar color</Text>
+            <View style={styles.colorRow}>
+              {AVATAR_COLORS.map((c) => (
+                <TouchableOpacity
+                  key={c}
+                  style={[styles.colorSwatch, { backgroundColor: c }, empFormColor === c && styles.colorSwatchActive]}
+                  onPress={() => setEmpFormColor(c)}
+                  disabled={savingEmployee}
+                />
+              ))}
+            </View>
+
+            {savingEmployee ? (
+              <View style={styles.uploadingRow}>
+                <ActivityIndicator color="#1A5CFF" />
+                <Text style={styles.uploadingText}>Saving...</Text>
+              </View>
+            ) : (
+              <>
+                <TouchableOpacity style={styles.ctaBtn} onPress={saveEmployee}>
+                  <Text style={styles.ctaBtnText}>{editingEmployee ? 'Save Changes' : 'Add Employee'}</Text>
+                </TouchableOpacity>
+                {editingEmployee && (
+                  <TouchableOpacity style={styles.deleteBtn} onPress={() => confirmDeleteEmployee(editingEmployee)}>
+                    <Text style={styles.deleteBtnText}>Remove Employee</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity style={styles.dismissBtn} onPress={closeEmployeeForm}>
+                  <Text style={styles.dismissText}>Cancel</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </KeyboardAvoidingView>
         </View>
       </Modal>
 
@@ -776,4 +946,21 @@ const styles = StyleSheet.create({
   formInputMulti: { height: 80, textAlignVertical: 'top' },
   uploadingRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 },
   uploadingText: { fontSize: 13, color: '#888' },
+  // Team / employee management
+  teamHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  addEmpBtn: { backgroundColor: '#f0f4ff', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20 },
+  addEmpBtnText: { color: '#1A5CFF', fontSize: 13, fontWeight: '600' },
+  emptyTeam: { borderWidth: 1.5, borderColor: '#eee', borderStyle: 'dashed', borderRadius: 12, padding: 20, alignItems: 'center', backgroundColor: '#fafafa' },
+  emptyTeamText: { fontSize: 12, color: '#888', textAlign: 'center' },
+  empRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 10, padding: 12, marginBottom: 8, gap: 10 },
+  empInfo: { flex: 1 },
+  empName: { fontSize: 13, fontWeight: '600', color: '#333' },
+  empMeta: { fontSize: 11, color: '#888', marginTop: 2 },
+  empEdit: { fontSize: 12, color: '#1A5CFF', fontWeight: '600' },
+  colorLabel: { fontSize: 12, color: '#888', marginBottom: 8, marginTop: 2 },
+  colorRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
+  colorSwatch: { width: 32, height: 32, borderRadius: 16 },
+  colorSwatchActive: { borderWidth: 3, borderColor: '#333' },
+  deleteBtn: { alignItems: 'center', marginTop: 12 },
+  deleteBtnText: { fontSize: 14, color: '#E8472A', fontWeight: '600' },
 });

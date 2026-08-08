@@ -1,5 +1,7 @@
 import * as ImagePicker from 'expo-image-picker';
-import { useEffect, useRef, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import LangToggle from '../../components/LangToggle';
 import { useActiveCompany } from '../../contexts/CompanyContext';
@@ -31,7 +33,8 @@ export default function AdminScreen() {
   const { company } = useCompany(companyId!);
   const { videos, loading: videosLoading, refetch } = useAllVideos(companyId!);
   const { employees, loading: employeesLoading, refetch: refetchEmployees } = useEmployees(companyId!);
-  const [currentPlan, setCurrentPlan] = useState<Plan>('growth');
+  const [currentPlan, setCurrentPlan] = useState<Plan>('starter');
+  const [upgrading, setUpgrading] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [annual, setAnnual] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan>('growth');
@@ -109,6 +112,47 @@ export default function AdminScreen() {
   useEffect(() => {
     loadInbox();
   }, []);
+
+  // Load the company's real plan on focus (also picks up a fresh upgrade
+  // after the user returns from Stripe Checkout)
+  useFocusEffect(
+    useCallback(() => {
+      loadSubscription();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [companyId])
+  );
+
+  async function loadSubscription() {
+    if (!companyId) return;
+    const { data } = await supabase
+      .from('company_subscriptions')
+      .select('plan_id, billing_period')
+      .eq('company_id', companyId)
+      .maybeSingle();
+    if (data?.plan_id) {
+      setCurrentPlan(data.plan_id as Plan);
+      setSelectedPlan(data.plan_id as Plan);
+    }
+    if (data?.billing_period) setAnnual(data.billing_period === 'annual');
+  }
+
+  // POST to a Supabase edge function with the anon key, returning parsed JSON.
+  async function postFunction(name: string, body: Record<string, unknown>) {
+    const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+    const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
+    const res = await fetch(`${supabaseUrl}/functions/v1/${name}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+      },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error ?? 'Request failed');
+    return data;
+  }
 
   // All employer-side messaging goes through the service-role `inbox`
   // function: RLS restricts the anon client to the caller's own rows.
@@ -453,9 +497,36 @@ export default function AdminScreen() {
     refetch();
   }
 
-  function confirmUpgrade() {
-    setCurrentPlan(selectedPlan);
-    setShowUpgrade(false);
+  async function confirmUpgrade() {
+    if (selectedPlan === currentPlan || upgrading) return;
+
+    if (selectedPlan === 'starter') {
+      Alert.alert(
+        'Manage subscription',
+        'To downgrade or cancel your plan, contact support or manage billing in Stripe.'
+      );
+      return;
+    }
+
+    setUpgrading(true);
+    try {
+      const data = await postFunction('create-checkout', {
+        company_id: companyId,
+        plan_id: selectedPlan,
+        billing_period: annual ? 'annual' : 'monthly',
+      });
+      setShowUpgrade(false);
+      if (data.url) {
+        // Opens Stripe's hosted checkout; the webhook records the plan and
+        // loadSubscription() (on focus) reflects it when the user returns.
+        await WebBrowser.openBrowserAsync(data.url);
+        loadSubscription();
+      }
+    } catch (err: any) {
+      Alert.alert('Checkout error', err.message ?? 'Could not start checkout.');
+    } finally {
+      setUpgrading(false);
+    }
   }
 
   return (
@@ -857,17 +928,21 @@ export default function AdminScreen() {
               style={[
                 styles.ctaBtn,
                 { backgroundColor: plans.find((p) => p.id === selectedPlan)?.color || '#1A5CFF' },
-                selectedPlan === currentPlan && styles.ctaBtnDisabled,
+                (selectedPlan === currentPlan || upgrading) && styles.ctaBtnDisabled,
               ]}
               onPress={confirmUpgrade}
-              disabled={selectedPlan === currentPlan}>
-              <Text style={styles.ctaBtnText}>
-                {selectedPlan === currentPlan
-                  ? t('alreadyOnPlan')
-                  : selectedPlan === 'starter'
-                  ? t('downgradeFree')
-                  : `${t('upgradeTo')} ${plans.find((p) => p.id === selectedPlan)?.name}`}
-              </Text>
+              disabled={selectedPlan === currentPlan || upgrading}>
+              {upgrading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.ctaBtnText}>
+                  {selectedPlan === currentPlan
+                    ? t('alreadyOnPlan')
+                    : selectedPlan === 'starter'
+                    ? t('downgradeFree')
+                    : `${t('upgradeTo')} ${plans.find((p) => p.id === selectedPlan)?.name}`}
+                </Text>
+              )}
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.dismissBtn} onPress={() => setShowUpgrade(false)}>

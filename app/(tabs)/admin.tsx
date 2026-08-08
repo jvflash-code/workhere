@@ -12,7 +12,7 @@ type Plan = 'starter' | 'growth' | 'pro';
 type ConversationRow = {
   id: string;
   user_id: string | null;
-  user_email: string;
+  user_email: string | null;
   last_message: string;
   last_message_at: string;
   unread: boolean;
@@ -113,7 +113,46 @@ export default function AdminScreen() {
   async function loadInbox() {
     setInboxLoading(true);
     try {
-      // Fetch conversations for this company with last message
+      // Real emails and cross-user conversations require the service role,
+      // so this goes through the `inbox` edge function rather than the
+      // anon client (which RLS restricts to the caller's own data).
+      const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+      const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
+
+      const res = await fetch(`${supabaseUrl}/functions/v1/inbox`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: supabaseAnonKey,
+          Authorization: `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify({ company_id: companyId }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error ?? 'Failed to load inbox');
+
+      const rows: ConversationRow[] = (json.conversations ?? []).map((c: any) => ({
+        id: c.id,
+        user_id: c.user_id ?? null,
+        user_email: c.user_email ?? null,
+        last_message: c.last_message ?? 'No messages yet',
+        last_message_at: c.last_message_at,
+        unread: !!c.unread,
+      }));
+
+      setConversations(rows);
+    } catch {
+      // Edge function not deployed yet (or unreachable) — fall back to the
+      // previous anon-client behavior so the inbox keeps working.
+      await loadInboxLegacy();
+    } finally {
+      setInboxLoading(false);
+    }
+  }
+
+  async function loadInboxLegacy() {
+    try {
       const { data: convs } = await supabase
         .from('conversations')
         .select('id, user_id, created_at')
@@ -127,7 +166,6 @@ export default function AdminScreen() {
         return;
       }
 
-      // For each conversation, get the last message
       const rows: ConversationRow[] = await Promise.all(
         convs.map(async (conv) => {
           const { data: msgs } = await supabase
@@ -138,12 +176,11 @@ export default function AdminScreen() {
             .limit(1);
 
           const lastMsg = msgs?.[0];
-          const emailPart = conv.user_id ? conv.user_id.slice(0, 8) : 'Anonymous';
 
           return {
             id: conv.id,
             user_id: conv.user_id,
-            user_email: emailPart,
+            user_email: null,
             last_message: lastMsg?.content ?? 'No messages yet',
             last_message_at: lastMsg?.created_at ?? conv.created_at,
             unread: lastMsg?.role === 'user',
@@ -151,12 +188,9 @@ export default function AdminScreen() {
         })
       );
 
-      // Filter to conversations that have messages
       setConversations(rows.filter((r) => r.last_message !== 'No messages yet'));
     } catch {
-      // silently fail
-    } finally {
-      setInboxLoading(false);
+      setConversations([]);
     }
   }
 
@@ -214,6 +248,12 @@ export default function AdminScreen() {
 
   function getInitials(emailOrId: string) {
     return emailOrId.slice(0, 2).toUpperCase();
+  }
+
+  function convDisplayName(conv: ConversationRow) {
+    if (conv.user_email) return conv.user_email;
+    if (conv.user_id) return `User ${conv.user_id.slice(0, 8)}`;
+    return 'Anonymous';
   }
 
   function formatTime(iso: string) {
@@ -437,10 +477,10 @@ export default function AdminScreen() {
             conversations.map((conv) => (
               <TouchableOpacity key={conv.id} style={styles.convRow} onPress={() => openConversation(conv)}>
                 <View style={[styles.convAvatar, { backgroundColor: conv.unread ? '#1A5CFF' : '#888' }]}>
-                  <Text style={styles.convAvatarText}>{getInitials(conv.user_email)}</Text>
+                  <Text style={styles.convAvatarText}>{getInitials(convDisplayName(conv))}</Text>
                 </View>
                 <View style={styles.convInfo}>
-                  <Text style={styles.convEmail} numberOfLines={1}>User {conv.user_id?.slice(0, 8) ?? 'Anonymous'}</Text>
+                  <Text style={styles.convEmail} numberOfLines={1}>{convDisplayName(conv)}</Text>
                   <Text style={styles.convPreview} numberOfLines={1}>{conv.last_message}</Text>
                 </View>
                 <View style={styles.convMeta}>
@@ -585,8 +625,8 @@ export default function AdminScreen() {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <View style={styles.modalHandle} />
             <View style={styles.replyHeader}>
-              <Text style={styles.replyTitle}>
-                User {selectedConv?.user_id?.slice(0, 8) ?? 'Anonymous'}
+              <Text style={styles.replyTitle} numberOfLines={1}>
+                {selectedConv ? convDisplayName(selectedConv) : ''}
               </Text>
               <TouchableOpacity onPress={() => setSelectedConv(null)}>
                 <Text style={styles.closeBtn}>Close</Text>

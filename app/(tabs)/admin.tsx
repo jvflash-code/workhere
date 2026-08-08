@@ -110,27 +110,29 @@ export default function AdminScreen() {
     loadInbox();
   }, []);
 
+  // All employer-side messaging goes through the service-role `inbox`
+  // function: RLS restricts the anon client to the caller's own rows.
+  async function callInbox(body: Record<string, unknown>) {
+    const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+    const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
+    const res = await fetch(`${supabaseUrl}/functions/v1/inbox`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+      },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error ?? 'Request failed');
+    return data;
+  }
+
   async function loadInbox() {
     setInboxLoading(true);
     try {
-      // Real emails and cross-user conversations require the service role,
-      // so this goes through the `inbox` edge function rather than the
-      // anon client (which RLS restricts to the caller's own data).
-      const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
-      const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
-
-      const res = await fetch(`${supabaseUrl}/functions/v1/inbox`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: supabaseAnonKey,
-          Authorization: `Bearer ${supabaseAnonKey}`,
-        },
-        body: JSON.stringify({ company_id: companyId }),
-      });
-
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error ?? 'Failed to load inbox');
+      const json = await callInbox({ action: 'list', company_id: companyId });
 
       const rows: ConversationRow[] = (json.conversations ?? []).map((c: any) => ({
         id: c.id,
@@ -199,14 +201,22 @@ export default function AdminScreen() {
     setThreadLoading(true);
     setThread([]);
 
-    const { data: msgs } = await supabase
-      .from('messages')
-      .select('id, role, content, created_at')
-      .eq('conversation_id', conv.id)
-      .order('created_at', { ascending: true })
-      .limit(50);
+    let msgs: ThreadMessage[] = [];
+    try {
+      const json = await callInbox({ action: 'thread', conversation_id: conv.id });
+      msgs = (json.messages as ThreadMessage[]) ?? [];
+    } catch {
+      // Fall back to the anon client if the function isn't deployed yet.
+      const { data } = await supabase
+        .from('messages')
+        .select('id, role, content, created_at')
+        .eq('conversation_id', conv.id)
+        .order('created_at', { ascending: true })
+        .limit(50);
+      msgs = (data as ThreadMessage[]) ?? [];
+    }
 
-    setThread((msgs as ThreadMessage[]) ?? []);
+    setThread(msgs);
     setThreadLoading(false);
     setTimeout(() => threadScrollRef.current?.scrollToEnd({ animated: false }), 200);
   }
@@ -219,17 +229,20 @@ export default function AdminScreen() {
     setReplying(true);
 
     try {
-      const { data: inserted, error } = await supabase
-        .from('messages')
-        .insert({
-          conversation_id: selectedConv.id,
-          role: 'employee',
-          content: text,
-        })
-        .select('id, role, content, created_at')
-        .single();
-
-      if (error) throw error;
+      let inserted: ThreadMessage | null = null;
+      try {
+        const json = await callInbox({ action: 'reply', conversation_id: selectedConv.id, content: text });
+        inserted = (json.message as ThreadMessage) ?? null;
+      } catch {
+        // Fall back to a direct insert if the function isn't deployed yet.
+        const { data, error } = await supabase
+          .from('messages')
+          .insert({ conversation_id: selectedConv.id, role: 'employee', content: text })
+          .select('id, role, content, created_at')
+          .single();
+        if (error) throw error;
+        inserted = data as ThreadMessage;
+      }
 
       if (inserted) {
         setThread((prev) => [...prev, inserted as ThreadMessage]);
